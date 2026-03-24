@@ -187,44 +187,6 @@ export default async function HomePage() {
             <span className="group-hover:translate-x-1 transition-transform">→</span>
           </Link>
         </div>
-        {/* Wave into Testimonials (#4a0520) — flipped */}
-        <BottomWave bg="white" fill="#4a0520" flip />
-      </section>
-
-      {/* ── TESTIMONIALS ── */}
-      <section className="relative" style={{ backgroundColor: "#4a0520" }}>
-        {/* Sprinkles layer — clipped to section, doesn't affect wave */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-          <Sprinkles />
-        </div>
-        {/* Content */}
-        <div className="relative py-10 md:py-14 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <p className="text-amber-400 text-xs font-bold tracking-[0.25em] uppercase mb-2">⭐ Reviews</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-white" style={{ fontFamily: "var(--font-playfair)" }}>
-              What Our Customers Love
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-5">
-            {testimonials.map((t) => (
-              <div key={t.name} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-colors">
-                <div className={`w-8 h-1 ${t.accent} rounded-full mb-3`} />
-                <div className="flex gap-0.5 mb-3">
-                  {Array.from({ length: t.stars }).map((_, i) => (
-                    <span key={i} className="text-amber-400 text-sm">★</span>
-                  ))}
-                </div>
-                <p className="text-rose-100/90 text-sm leading-relaxed mb-4 italic">&ldquo;{t.text}&rdquo;</p>
-                <div>
-                  <p className="text-white font-semibold text-sm">{t.name}</p>
-                  <p className="text-rose-300/70 text-xs">{t.location}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        {/* Wave — outside sprinkles layer, never clipped */}
-        <BottomWave bg="#4a0520" fill="white" />
       </section>
 
       {/* ── CTA — white ── */}
