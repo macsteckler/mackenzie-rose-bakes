@@ -38,30 +38,25 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Mackenzie Rose Bakes" }],
   creator: "Mackenzie Rose Bakes",
-  metadataBase: new URL("https://www.mackenzierosebakes.com"),
+  // Uses the live Vercel URL automatically; falls back to custom domain once connected
+  metadataBase: new URL(
+    process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "https://www.mackenzierosebakes.com"
+  ),
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://mackenzierosebakes.com",
     siteName: "Mackenzie Rose Bakes",
     title: "Mackenzie Rose Bakes | Custom Cakes NYC",
     description:
       "Custom cakes, cupcakes, and baked goods handcrafted in New York City.",
-    images: [
-      {
-        url: "/opengraph-image",
-        width: 1200,
-        height: 630,
-        alt: "Mackenzie Rose Bakes - Custom Cakes NYC",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Mackenzie Rose Bakes | Custom Cakes NYC",
     description:
       "Custom cakes, cupcakes, and baked goods handcrafted in New York City.",
-    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
