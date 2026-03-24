@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Background circle -->
+  <circle cx="16" cy="16" r="16" fill="#fce4ec"/>
+
+  <!-- Candle -->
+  <rect x="15" y="4" width="2" height="5" rx="1" fill="#f9a8d4"/>
+  <!-- Flame -->
+  <ellipse cx="16" cy="3.5" rx="1.2" ry="1.8" fill="#fb923c"/>
+  <ellipse cx="16" cy="4" rx="0.6" ry="1" fill="#fde68a"/>
+
+  <!-- Top cake tier -->
+  <rect x="9" y="11" width="14" height="7" rx="2" fill="#fce7f3"/>
+  <!-- Top tier frosting drip -->
+  <path d="M9 13 Q11 15.5 13 13 Q15 15.5 17 13 Q19 15.5 21 13 Q23 15.5 23 13" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Bottom cake tier -->
+  <rect x="5" y="18" width="22" height="8" rx="2" fill="#f9a8d4"/>
+  <!-- Bottom tier frosting drip -->
+  <path d="M5 20 Q7.5 23 10 20 Q12.5 23 15 20 Q17.5 23 20 20 Q22.5 23 25 20 Q27 23 27 20" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Sprinkles on bottom tier -->
+  <rect x="9" y="22" width="3" height="1" rx="0.5" fill="#fb7185" transform="rotate(30 9 22)"/>
+  <rect x="15" y="23" width="3" height="1" rx="0.5" fill="#fbbf24" transform="rotate(-20 15 23)"/>
+  <rect x="20" y="21" width="3" height="1" rx="0.5" fill="#a78bfa" transform="rotate(15 20 21)"/>
+  <rect x="12" y="21" width="3" height="1" rx="0.5" fill="#34d399" transform="rotate(-35 12 21)"/>
+</svg>
