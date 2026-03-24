@@ -35,32 +35,6 @@ const values = [
   },
 ];
 
-const milestones = [
-  {
-    year: "2019",
-    event: "Started baking custom cakes for friends and family in NYC",
-  },
-  {
-    year: "2020",
-    event: "Launched Mackenzie Rose Bakes officially, taking first paid orders",
-  },
-  {
-    year: "2021",
-    event: "Booked first wedding cake — a 4-tier floral design in Brooklyn",
-  },
-  {
-    year: "2022",
-    event: "Expanded to cupcakes, cookies, and corporate orders",
-  },
-  {
-    year: "2023",
-    event: "Surpassed 500 custom orders and counting",
-  },
-  {
-    year: "2024+",
-    event: "Growing the studio, one delicious creation at a time",
-  },
-];
 
 export default function AboutPage() {
   return (
@@ -89,82 +63,63 @@ export default function AboutPage() {
 
       {/* Bio Section */}
       <section className="py-16 md:py-24 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-14 items-center">
-            <div className="relative order-2 md:order-1">
-              <div className="aspect-[4/5] rounded-3xl bg-gradient-to-br from-rose-100 via-pink-50 to-amber-100 flex items-center justify-center overflow-hidden shadow-xl">
-                <div className="text-center">
-                  <div className="text-[100px] leading-none mb-4">👩‍🍳</div>
-                  <p
-                    className="text-rose-500 font-bold text-lg"
-                    style={{ fontFamily: "var(--font-playfair)" }}
-                  >
-                    Mackenzie Rose
-                  </p>
-                  <p className="text-stone-500 text-sm">Cake Artist · NYC</p>
-                </div>
-              </div>
-              {/* Floating badge */}
-              <div className="absolute -bottom-5 -left-5 bg-rose-500 text-white rounded-2xl px-5 py-3 shadow-lg -rotate-2">
-                <p className="font-bold text-sm" style={{ fontFamily: "var(--font-playfair)" }}>
-                  500+ Happy Customers 🎂
-                </p>
-              </div>
-            </div>
-
-            <div className="order-1 md:order-2">
-              <p className="text-amber-500 text-sm font-semibold tracking-widest uppercase mb-3">
-                Hi, I&apos;m Mackenzie
-              </p>
-              <h2
-                className="text-4xl md:text-5xl font-bold text-rose-950 leading-tight mb-6"
-                style={{ fontFamily: "var(--font-playfair)" }}
-              >
-                Passion Baked Into{" "}
-                <span className="text-rose-500 italic">Every Layer</span>
-              </h2>
-              <div className="space-y-4 text-stone-600 leading-relaxed">
-                <p>
-                  I&apos;ve been baking for as long as I can remember. Growing
-                  up, the kitchen was my happy place — and New York City was the
-                  backdrop that inspired my boldest, most colorful creations.
-                </p>
-                <p>
-                  What started as baking for friends and family turned into
-                  something I never expected: a full-blown cake studio right
-                  here in the city I love. Every order is a collaboration
-                  between us — you bring the vision, I bring it to life with
-                  flour, butter, and a whole lot of love.
-                </p>
-                <p>
-                  I believe a cake should be as beautiful as it is delicious.
-                  That&apos;s why I never compromise on ingredients and I never
-                  stop learning new techniques. From delicate sugar flowers to
-                  bold geometric designs, I approach every creation as a piece
-                  of art.
-                </p>
-                <p>
-                  When I&apos;m not in the kitchen, you&apos;ll find me
-                  exploring NYC&apos;s incredible food scene, sketching design
-                  ideas in coffee shops, or dreaming up the next wild flavor
-                  combination to test on willing taste-testers.
-                </p>
-              </div>
-              <div className="mt-8 flex flex-wrap gap-4">
-                <Link
-                  href="/portfolio"
-                  className="px-6 py-3 bg-rose-500 hover:bg-rose-600 text-white font-semibold rounded-full transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5 text-sm"
-                >
-                  See My Work
-                </Link>
-                <Link
-                  href="/order"
-                  className="px-6 py-3 bg-white hover:bg-rose-50 text-rose-600 font-semibold rounded-full border-2 border-rose-200 hover:border-rose-300 transition-all duration-200 text-sm hover:-translate-y-0.5"
-                >
-                  Work With Me
-                </Link>
-              </div>
-            </div>
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-amber-500 text-sm font-semibold tracking-widest uppercase mb-3">
+            Hi, I&apos;m Mackenzie
+          </p>
+          <h2
+            className="text-4xl md:text-5xl font-bold text-rose-950 leading-tight mb-6"
+            style={{ fontFamily: "var(--font-playfair)" }}
+          >
+            Passion Baked Into{" "}
+            <span className="text-rose-500 italic">Every Layer</span>
+          </h2>
+          <div className="space-y-4 text-stone-600 leading-relaxed text-left">
+            <p>
+              I&apos;ve been baking for as long as I can remember. Growing
+              up, the kitchen was my happy place — and New York City was the
+              backdrop that inspired my boldest, most colorful creations.
+            </p>
+            <p>
+              What started as baking for friends and family turned into
+              something I never expected: a full-blown cake studio right
+              here in the city I love. Every order is a collaboration
+              between us — you bring the vision, I bring it to life with
+              flour, butter, and a whole lot of love.
+            </p>
+            <p>
+              I&apos;m currently attending the{" "}
+              <span className="font-semibold text-rose-700">Institute of Culinary Education</span>{" "}
+              in New York City, deepening my skills and bringing everything I
+              learn straight back into my kitchen and into every cake I make.
+            </p>
+            <p>
+              I believe a cake should be as beautiful as it is delicious.
+              That&apos;s why I never compromise on ingredients and I never
+              stop learning new techniques. From delicate sugar flowers to
+              bold geometric designs, I approach every creation as a piece
+              of art.
+            </p>
+            <p>
+              When I&apos;m not in the kitchen, you&apos;ll find me
+              exploring NYC&apos;s incredible food scene, sketching design
+              ideas in coffee shops, or dreaming up the next wild flavor
+              combination to test on willing taste-testers.
+            </p>
+          </div>
+          <div className="mt-8 flex flex-wrap gap-4 justify-center">
+            <Link
+              href="/portfolio"
+              className="px-6 py-3 bg-rose-500 hover:bg-rose-600 text-white font-semibold rounded-full transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5 text-sm"
+            >
+              See My Work
+            </Link>
+            <Link
+              href="/order"
+              className="px-6 py-3 bg-white hover:bg-rose-50 text-rose-600 font-semibold rounded-full border-2 border-rose-200 hover:border-rose-300 transition-all duration-200 text-sm hover:-translate-y-0.5"
+            >
+              Work With Me
+            </Link>
           </div>
         </div>
       </section>
@@ -201,40 +156,6 @@ export default function AboutPage() {
                 </p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Timeline */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <p className="text-amber-500 text-sm font-semibold tracking-widest uppercase mb-2">
-              The Journey
-            </p>
-            <h2
-              className="text-4xl font-bold text-rose-950"
-              style={{ fontFamily: "var(--font-playfair)" }}
-            >
-              How We Got Here
-            </h2>
-          </div>
-          <div className="relative">
-            <div className="absolute left-6 top-0 bottom-0 w-px bg-rose-200" />
-            <div className="space-y-8">
-              {milestones.map((m) => (
-                <div key={m.year} className="relative flex gap-6">
-                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-rose-500 text-white font-bold text-xs flex items-center justify-center z-10 shadow-md">
-                    {m.year}
-                  </div>
-                  <div className="flex-1 bg-rose-50 rounded-2xl p-4 border border-rose-100">
-                    <p className="text-stone-700 text-sm leading-relaxed">
-                      {m.event}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
