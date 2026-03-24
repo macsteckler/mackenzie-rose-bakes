@@ -49,7 +49,7 @@ export const metadata: Metadata = {
       "Custom cakes, cupcakes, and baked goods handcrafted in New York City.",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
         alt: "Mackenzie Rose Bakes - Custom Cakes NYC",
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     title: "Mackenzie Rose Bakes | Custom Cakes NYC",
     description:
       "Custom cakes, cupcakes, and baked goods handcrafted in New York City.",
-    images: ["/og-image.jpg"],
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
