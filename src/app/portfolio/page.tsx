@@ -49,8 +49,12 @@ export default async function PortfolioPage() {
         </div>
       </section>
 
-      {/* Scroll-driven slideshow — no wrapper padding, it fills the viewport */}
-      <PortfolioSlideshow photos={photos} />
+      {/* Portfolio carousel */}
+      <section className="bg-white py-12 md:py-16">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <PortfolioSlideshow photos={photos} />
+        </div>
+      </section>
 
       {/* Upload hint when empty */}
       {photos.length === 0 && (
