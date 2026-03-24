@@ -27,7 +27,7 @@ const services = [
       "Fondant, buttercream, or naked finish",
       "Dietary accommodations available",
     ],
-    startingPrice: "$150",
+    startingPrice: "$115",
     color: "rose",
   },
   {
@@ -44,7 +44,7 @@ const services = [
       "Cutting & dessert cake options",
       "NYC delivery & setup available",
     ],
-    startingPrice: "$400",
+    startingPrice: "$300",
     color: "pink",
   },
   {
@@ -61,7 +61,7 @@ const services = [
       "Mini cupcake option",
       "Ideal for office events & showers",
     ],
-    startingPrice: "$60 / dozen",
+    startingPrice: "$45 / dozen",
     color: "amber",
   },
   {
@@ -78,7 +78,7 @@ const services = [
       "Gift-ready packaging",
       "Corporate branding options",
     ],
-    startingPrice: "$48 / dozen",
+    startingPrice: "$36 / dozen",
     color: "emerald",
   },
   {
@@ -95,7 +95,7 @@ const services = [
       "Anniversary cakes",
       "Retirement & milestone cakes",
     ],
-    startingPrice: "$150",
+    startingPrice: "$115",
     color: "purple",
   },
   {
