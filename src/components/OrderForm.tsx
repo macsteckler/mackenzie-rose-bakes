@@ -7,7 +7,7 @@ const serviceOptions = [
   "Birthday Cake",
   "Wedding Cake",
   "Cupcakes",
-  "Cookie Box",
+  "Custom Cookie Assortment",
   "Celebration Cake",
   "Corporate / Bulk Order",
   "Your Vision, Made Real (Custom / Misc)",

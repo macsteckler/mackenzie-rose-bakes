@@ -92,10 +92,10 @@ export default function OrderPage() {
                   Popular This Season
                 </h3>
                 <ul className="space-y-2 text-sm text-stone-600">
-                  <li>🎂 Custom Birthday Cakes — from $150</li>
-                  <li>💒 Wedding Cakes — from $400</li>
-                  <li>🧁 Cupcake Dozens — from $60</li>
-                  <li>🍪 Cookie Boxes — from $48</li>
+                  <li>🎂 Custom Birthday Cakes — from $115</li>
+                  <li>💒 Wedding Cakes — from $300</li>
+                  <li>🧁 Cupcake Dozens — from $45</li>
+                  <li>🍪 Custom Cookie Assortment — from $36</li>
                 </ul>
               </div>
             </div>

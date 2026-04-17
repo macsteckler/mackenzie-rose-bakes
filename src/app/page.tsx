@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getPortfolioPhotos } from "@/lib/supabase";
+import { getGoogleReviews } from "@/lib/google-reviews";
 import Sprinkles from "@/components/Sprinkles";
 import HomeFeaturedCarousel from "@/components/HomeFeaturedCarousel";
 
 export const metadata: Metadata = {
   title: "Mackenzie Rose Bakes | Custom Cakes & Sweets NYC",
   description:
-    "New York City's sweetest custom cake studio. Handcrafted birthday cakes, wedding cakes, cupcakes, and celebration treats made with love in NYC. Order yours today.",
+    "New York City's sweetest home baker. Handcrafted birthday cakes, wedding cakes, cupcakes, and celebration treats made with love in NYC. Order yours today.",
 };
 
 // Inline wave at the bottom of a section — fill = next section's bg color
@@ -31,15 +32,18 @@ const services = [
   { icon: "🎂", title: "Birthday Cakes", desc: "Bold, personalized creations for every age and style.", bg: "bg-rose-100", border: "border-rose-200" },
   { icon: "💒", title: "Wedding Cakes", desc: "Elegant tiered masterpieces for your perfect day.", bg: "bg-pink-100", border: "border-pink-200" },
   { icon: "🧁", title: "Cupcakes", desc: "Individual flavors and designs, perfect for any event.", bg: "bg-amber-100", border: "border-amber-200" },
-  { icon: "🍪", title: "Cookie Boxes", desc: "Decorated sugar cookies and custom cookie assortments.", bg: "bg-yellow-100", border: "border-yellow-200" },
+  { icon: "🍪", title: "Custom Cookie Assortment", desc: "Thoughtfully curated custom cookie assortments for any occasion.", bg: "bg-yellow-100", border: "border-yellow-200" },
   { icon: "✨", title: "Your Vision, Made Real", desc: "Got a wild idea? Describe your dream and we'll bring it to life.", bg: "bg-purple-100", border: "border-purple-200" },
 ];
 
-const testimonials = [
-  { name: "Emily R.", location: "Upper West Side, NYC", text: "Mackenzie made the most stunning birthday cake I've ever seen — and it tasted even better than it looked. Everyone at the party was asking for her info!", stars: 5, accent: "bg-rose-400" },
-  { name: "Jessica & Tom", location: "Brooklyn, NYC", text: "Our wedding cake was an absolute dream. Mackenzie listened to every detail and brought our vision to life perfectly. We couldn't have asked for more.", stars: 5, accent: "bg-amber-400" },
-  { name: "Sarah M.", location: "Midtown Manhattan", text: "I've ordered cupcakes for our office twice now. Every single time they're beautiful, delicious, and delivered on time. Absolutely love her work!", stars: 5, accent: "bg-pink-400" },
+const staticReviews = [
+  { name: "Emily R.", subtitle: "Upper West Side, NYC", text: "Mackenzie made the most stunning birthday cake I've ever seen — and it tasted even better than it looked. Everyone at the party was asking for her info!", stars: 5, accent: "bg-rose-400" },
+  { name: "Jessica & Tom", subtitle: "Brooklyn, NYC", text: "Our wedding cake was an absolute dream. Mackenzie listened to every detail and brought our vision to life perfectly. We couldn't have asked for more.", stars: 5, accent: "bg-amber-400" },
+  { name: "Sarah M.", subtitle: "Midtown Manhattan", text: "I've ordered cupcakes for our office twice now. Every single time they're beautiful, delicious, and delivered on time. Absolutely love her work!", stars: 5, accent: "bg-pink-400" },
 ];
+
+// Accent colors cycled across Google reviews (no accent data in Places API response)
+const accentCycle = ["bg-rose-400", "bg-amber-400", "bg-pink-400", "bg-purple-400", "bg-sky-400"];
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -54,7 +58,10 @@ const jsonLd = {
 };
 
 export default async function HomePage() {
-  const photos = await getPortfolioPhotos();
+  const [photos, googleReviews] = await Promise.all([
+    getPortfolioPhotos(),
+    getGoogleReviews(),
+  ]);
 
   return (
     <>
@@ -74,7 +81,7 @@ export default async function HomePage() {
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6 shadow-sm border border-rose-200">
                 <span className="text-sm">🎂</span>
-                <span className="text-rose-600 text-sm font-medium">New York City&apos;s Custom Cake Studio</span>
+                <span className="text-rose-600 text-sm font-medium">New York City&apos;s Custom Home Baker</span>
               </div>
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-rose-950 leading-tight mb-6"
                 style={{ fontFamily: "var(--font-playfair)" }}>
@@ -187,6 +194,95 @@ export default async function HomePage() {
             <span className="group-hover:translate-x-1 transition-transform">→</span>
           </Link>
         </div>
+        {/* Wave into Reviews section */}
+        <BottomWave bg="white" fill="#fce4ec" flip />
+      </section>
+
+      {/* ── REVIEWS ── */}
+      <section className="relative" style={{ backgroundColor: "#fce4ec" }}>
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <Sprinkles />
+          <div className="absolute inset-0"
+            style={{ background: "radial-gradient(ellipse 100% 100% at 50% 50%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.3) 60%, transparent 100%)" }} />
+        </div>
+        <div className="relative py-10 md:py-14 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <p className="text-pink-500 text-xs font-bold tracking-[0.25em] uppercase mb-2">⭐ Reviews</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-rose-950" style={{ fontFamily: "var(--font-playfair)" }}>
+              What Our Customers <span className="text-rose-500 italic">Say</span>
+            </h2>
+            {googleReviews && (
+              <div className="flex items-center justify-center gap-2 mt-3">
+                <span className="text-amber-500 text-lg leading-none">★★★★★</span>
+                <span className="text-rose-900/70 text-sm">
+                  {googleReviews.rating.toFixed(1)} · {googleReviews.total} reviews on Google
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {(googleReviews
+              ? googleReviews.reviews.map((r, i) => ({
+                  name: r.author_name,
+                  subtitle: r.relative_time_description,
+                  text: r.text,
+                  stars: r.rating,
+                  accent: accentCycle[i % accentCycle.length],
+                }))
+              : staticReviews
+            ).map((review, i) => (
+              <div key={i}
+                className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 flex flex-col gap-3">
+                {/* Header */}
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-full ${review.accent} flex items-center justify-center text-white font-bold text-sm flex-shrink-0`}>
+                    {review.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-rose-950 text-sm truncate">{review.name}</p>
+                    <p className="text-rose-900/50 text-xs truncate">{review.subtitle}</p>
+                  </div>
+                  {/* Google G badge — only shown for live Google reviews */}
+                  {googleReviews && (
+                    <div className="ml-auto flex-shrink-0">
+                      <svg width="16" height="16" viewBox="0 0 24 24" aria-label="Google review" role="img">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                {/* Stars */}
+                <div className="flex gap-0.5">
+                  {Array.from({ length: 5 }).map((_, s) => (
+                    <span key={s} className={s < review.stars ? "text-amber-400 text-sm" : "text-rose-200 text-sm"}>★</span>
+                  ))}
+                </div>
+                {/* Review text */}
+                <p className="text-stone-600 text-sm leading-relaxed">
+                  {review.text.length > 200 ? `${review.text.slice(0, 197)}…` : review.text}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Link to Google listing — only shown when pulling live reviews */}
+          {googleReviews && (
+            <div className="text-center mt-8">
+              <a
+                href={`https://www.google.com/maps/place/?q=place_id:${googleReviews.placeId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-rose-50 text-rose-600 font-semibold rounded-full border-2 border-rose-200 hover:border-rose-400 transition-all duration-200 hover:-translate-y-0.5 shadow-sm text-sm">
+                See all reviews on Google →
+              </a>
+            </div>
+          )}
+        </div>
+        <BottomWave bg="#fce4ec" fill="white" />
       </section>
 
       {/* ── CTA — white ── */}

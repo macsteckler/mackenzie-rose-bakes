@@ -13,7 +13,7 @@ npm install
 ```bash
 cp .env.local.example .env.local
 ```
-Fill in your Supabase and Formspree credentials (see below).
+Fill in your credentials (see below).
 
 ### 3. Run locally
 ```bash
@@ -29,7 +29,12 @@ Open [http://localhost:3000](http://localhost:3000).
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase dashboard → Project Settings → API |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase dashboard → Project Settings → API |
-| `NEXT_PUBLIC_FORMSPREE_ID` | [formspree.io](https://formspree.io) → create a form → copy the ID |
+| `RESEND_API_KEY` | [resend.com](https://resend.com) → API Keys |
+| `ORDER_EMAIL` | The inbox address that receives order form submissions |
+| `GOOGLE_PLACES_API_KEY` | Google Cloud Console → APIs & Services → Credentials → create an API key (enable the Places API) |
+| `GOOGLE_PLACE_ID` | Find yours at [developers.google.com/maps/documentation/places/web-service/place-id](https://developers.google.com/maps/documentation/places/web-service/place-id) — search for "Mackenzie Rose Bakes" |
+
+> **Google Reviews:** `GOOGLE_PLACES_API_KEY` and `GOOGLE_PLACE_ID` are optional. If they are not set, the site falls back to static example reviews automatically. Google reviews are cached for 24 hours so you won't burn API quota.
 
 ---
 
@@ -61,7 +66,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 | Route | Description |
 |---|---|
-| `/` | Homepage — hero, featured gallery, services preview, testimonials |
+| `/` | Homepage — hero, featured gallery, services preview, live Google reviews, about snippet |
 | `/portfolio` | Full photo gallery (fetched from Supabase Storage) |
 | `/services` | All services with details, pricing, and FAQs |
 | `/order` | Order request form (sent via Formspree to your email) |
@@ -74,6 +79,7 @@ Open [http://localhost:3000](http://localhost:3000).
 - **Next.js 16** (App Router) — SSR for top SEO performance
 - **Tailwind CSS 4** — Utility-first responsive styling
 - **Supabase Storage** — Portfolio photo hosting
-- **Formspree** — Order form email delivery (no backend needed)
+- **Resend** — Order form email delivery via `/api/order`
+- **Google Places API** — Live Google review feed (cached 24 h, optional)
 - **Google Fonts** — Playfair Display + Lato
 - **Vercel** — Hosting & deployment

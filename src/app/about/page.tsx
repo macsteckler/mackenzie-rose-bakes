@@ -81,11 +81,12 @@ export default function AboutPage() {
               backdrop that inspired my boldest, most colorful creations.
             </p>
             <p>
-              What started as baking for friends and family turned into
-              something I never expected: a full-blown cake studio right
-              here in the city I love. Every order is a collaboration
-              between us — you bring the vision, I bring it to life with
-              flour, butter, and a whole lot of love.
+              What started as baking for friends and family has grown into
+              something I never expected — creating custom cakes for all
+              kinds of celebrations, right from my home kitchen in the
+              city I love. Every order is a collaboration between us — you
+              bring the vision, I bring it to life with flour, butter, and
+              a whole lot of love.
             </p>
             <p>
               I&apos;m currently attending the{" "}
@@ -96,9 +97,9 @@ export default function AboutPage() {
             <p>
               I believe a cake should be as beautiful as it is delicious.
               That&apos;s why I never compromise on ingredients and I never
-              stop learning new techniques. From delicate sugar flowers to
-              bold geometric designs, I approach every creation as a piece
-              of art.
+              stop learning new techniques. From intricate buttercream
+              piping to delicate hand-crafted details, I approach every
+              creation as a piece of art.
             </p>
             <p>
               When I&apos;m not in the kitchen, you&apos;ll find me
@@ -161,21 +162,21 @@ export default function AboutPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-center">
+      <section className="py-16 bg-white text-center">
         <div className="max-w-xl mx-auto px-4">
           <h2
-            className="text-3xl md:text-4xl font-bold mb-3"
+            className="text-3xl md:text-4xl font-bold mb-3 text-rose-950"
             style={{ fontFamily: "var(--font-playfair)" }}
           >
             Let&apos;s Create Together
           </h2>
-          <p className="text-rose-100 mb-7">
+          <p className="text-stone-500 mb-7">
             Ready to turn your vision into something delicious? I&apos;d love to
             hear from you.
           </p>
           <Link
             href="/order"
-            className="inline-block px-8 py-3.5 bg-white text-rose-600 font-bold rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+            className="inline-block px-8 py-3.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
           >
             Request a Custom Order
           </Link>

@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Services — Custom Cakes, Cupcakes & More NYC",
   description:
-    "Explore our full range of custom baked goods in New York City: birthday cakes, wedding cakes, cupcakes, decorated cookies, and corporate orders. Starting prices included.",
+    "Explore our full range of custom baked goods in New York City: birthday cakes, wedding cakes, cupcakes, custom cookie assortments, and corporate orders. Starting prices included.",
   openGraph: {
     title: "Services | Mackenzie Rose Bakes",
     description:
@@ -65,15 +65,15 @@ const services = [
     color: "amber",
   },
   {
-    id: "cookie-boxes",
+    id: "cookie-assortment",
     icon: "🍪",
-    title: "Cookie Boxes",
+    title: "Custom Cookie Assortment",
     tagline: "Adorable, delicious, giftable",
     description:
-      "Decorated royal icing sugar cookies crafted to any shape, theme, or color palette. Beautifully boxed and perfect as party favors, gifts, or sweet table additions.",
+      "A thoughtfully curated assortment of cookies made to match your theme or color palette. Beautifully boxed and perfect as party favors, gifts, or sweet table additions.",
     features: [
-      "Custom shapes cut to order",
-      "Royal icing or buttercream",
+      "Custom flavor and color palettes",
+      "Mix-and-match variety",
       "Individual cello bags available",
       "Gift-ready packaging",
       "Corporate branding options",
@@ -121,9 +121,9 @@ const services = [
     title: "Corporate & Bulk Orders",
     tagline: "Branded treats for your team & events",
     description:
-      "Impress clients and celebrate your team with custom branded cakes, cookie boxes, and cupcake sets. Great for product launches, holiday parties, and company milestones.",
+      "Impress clients and celebrate your team with custom branded cakes, cookie assortments, and cupcake sets. Great for product launches, holiday parties, and company milestones.",
     features: [
-      "Logo-printed cookie boxes",
+      "Branded cookie assortments",
       "Branded cakes & cupcakes",
       "Bulk discounts available",
       "NYC corporate delivery",
@@ -374,20 +374,20 @@ export default function ServicesPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-center">
+      <section className="py-16 bg-white text-center">
         <div className="max-w-xl mx-auto px-4">
           <h2
-            className="text-3xl md:text-4xl font-bold mb-3"
+            className="text-3xl md:text-4xl font-bold mb-3 text-rose-950"
             style={{ fontFamily: "var(--font-playfair)" }}
           >
             Ready to Order?
           </h2>
-          <p className="text-rose-100 mb-7">
+          <p className="text-stone-500 mb-7">
             Slots fill up fast — especially for weekends and holidays.
           </p>
           <Link
             href="/order"
-            className="inline-block px-8 py-3.5 bg-white text-rose-600 font-bold rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+            className="inline-block px-8 py-3.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
           >
             Request a Custom Order
           </Link>

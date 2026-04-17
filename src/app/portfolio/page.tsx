@@ -73,20 +73,20 @@ export default async function PortfolioPage() {
       )}
 
       {/* CTA */}
-      <section className="py-16 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-center">
+      <section className="py-16 bg-white text-center">
         <div className="max-w-xl mx-auto px-4">
           <h2
-            className="text-3xl md:text-4xl font-bold mb-3"
+            className="text-3xl md:text-4xl font-bold mb-3 text-rose-950"
             style={{ fontFamily: "var(--font-playfair)" }}
           >
             Love What You See?
           </h2>
-          <p className="text-rose-100 mb-7">
+          <p className="text-stone-500 mb-7">
             Let&apos;s create something beautiful for your occasion.
           </p>
           <Link
             href="/order"
-            className="inline-block px-8 py-3.5 bg-white text-rose-600 font-bold rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+            className="inline-block px-8 py-3.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
           >
             Request a Custom Order
           </Link>
