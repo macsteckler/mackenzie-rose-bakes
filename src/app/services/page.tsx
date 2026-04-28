@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { sitePath } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Services — Custom Cakes, Cupcakes & More NYC",
   description:
     "Explore our full range of custom baked goods in New York City: birthday cakes, wedding cakes, cupcakes, custom cookie assortments, and corporate orders. Starting prices included.",
+  alternates: {
+    canonical: sitePath("/services"),
+  },
   openGraph: {
     title: "Services | Mackenzie Rose Bakes",
     description:
@@ -19,12 +23,12 @@ const services = [
     title: "Birthday Cakes",
     tagline: "The centerpiece of every celebration",
     description:
-      "Completely custom birthday cakes designed around your vision. From whimsical and colorful to sleek and elegant, every cake is built from scratch with scratch-made buttercream, fillings, and fondant details.",
+      "Completely custom birthday cakes designed around your vision. From whimsical and colorful to sleek and elegant, every cake is built from scratch with scratch-made buttercream, fillings, and handcrafted decorative finishes.",
     features: [
       "Any flavor or flavor combination",
       "Custom colors & themes",
       "1–6 tiers available",
-      "Fondant, buttercream, or naked finish",
+      "Buttercream, ganache drip, or naked finishes",
       "Dietary accommodations available",
     ],
     startingPrice: "$115",
@@ -39,7 +43,7 @@ const services = [
       "Your wedding cake should be as breathtaking as your dress. We work closely with you to design a cake that reflects your wedding aesthetic — whether it's romantic florals, modern minimalism, or bold maximalism.",
     features: [
       "Complimentary tasting consultation",
-      "Custom floral & fondant detail work",
+      "Custom floral piping & intricate buttercream detail work",
       "Tiered designs for any guest count",
       "Cutting & dessert cake options",
       "NYC delivery & setup available",

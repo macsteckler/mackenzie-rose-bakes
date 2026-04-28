@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -40,7 +41,7 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 overflow-visible transition-all duration-300 ${
           scrolled
             ? "bg-white/95 backdrop-blur-sm shadow-sm"
             : "bg-white/80 backdrop-blur-sm"
@@ -49,16 +50,29 @@ export default function Navbar() {
         <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
-            <Link href="/" className="flex flex-col leading-tight group">
-              <span
-                className="text-xl md:text-2xl font-bold text-rose-600 tracking-wide"
-                style={{ fontFamily: "var(--font-playfair)" }}
-              >
-                Mackenzie Rose
-              </span>
-              <span className="text-xs md:text-sm text-amber-600 font-medium tracking-[0.2em] uppercase">
-                Bakes
-              </span>
+            <Link
+              href="/"
+              className="flex items-center gap-2 md:gap-3 shrink-0 min-w-0"
+            >
+              <Image
+                src="/mackenzielogotransparent.png"
+                alt=""
+                width={160}
+                height={160}
+                priority
+                className="object-contain w-auto shrink-0 h-[4.5rem] sm:h-[4.75rem] md:h-[5.75rem]"
+              />
+              <div className="flex flex-col leading-tight text-left">
+                <span
+                  className="text-lg sm:text-xl md:text-2xl font-bold text-rose-600 tracking-wide"
+                  style={{ fontFamily: "var(--font-playfair)" }}
+                >
+                  Mackenzie Rose
+                </span>
+                <span className="text-[0.65rem] sm:text-xs md:text-sm text-amber-600 font-medium tracking-[0.2em] uppercase">
+                  Bakes
+                </span>
+              </div>
             </Link>
 
             {/* Desktop Nav */}

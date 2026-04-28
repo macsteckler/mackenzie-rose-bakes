@@ -1,35 +1,34 @@
 import type { MetadataRoute } from "next";
-
-const BASE_URL = "https://www.mackenzierosebakes.com";
+import { SITE_URL } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
-      url: BASE_URL,
+      url: SITE_URL,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 1,
     },
     {
-      url: `${BASE_URL}/portfolio`,
+      url: `${SITE_URL}/portfolio`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
-      url: `${BASE_URL}/services`,
+      url: `${SITE_URL}/services`,
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.9,
     },
     {
-      url: `${BASE_URL}/order`,
+      url: `${SITE_URL}/order`,
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
-      url: `${BASE_URL}/about`,
+      url: `${SITE_URL}/about`,
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.7,

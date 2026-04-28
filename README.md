@@ -31,6 +31,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase dashboard → Project Settings → API |
 | `RESEND_API_KEY` | [resend.com](https://resend.com) → API Keys |
 | `ORDER_EMAIL` | The inbox address that receives order form submissions |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase dashboard → Project Settings → API → `service_role` (server-only; never expose to the client). Used to upload generated order proposal PDFs to private Storage. |
 | `GOOGLE_PLACES_API_KEY` | Google Cloud Console → APIs & Services → Credentials → create an API key (enable the Places API) |
 | `GOOGLE_PLACE_ID` | Find yours at [developers.google.com/maps/documentation/places/web-service/place-id](https://developers.google.com/maps/documentation/places/web-service/place-id) — search for "Mackenzie Rose Bakes" |
 
@@ -48,11 +49,20 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
+## Order proposal PDFs
+
+When someone submits the order form, the app generates a branded PDF and emails it to `ORDER_EMAIL` for review. The same file is uploaded to Supabase Storage for a future admin flow.
+
+1. Create a **private** Storage bucket named `proposals` (Supabase → Storage → New bucket).
+2. Add `SUPABASE_SERVICE_ROLE_KEY` to your environment (local and Vercel). Without it, emails still send with the PDF attached, but uploads are skipped.
+
+---
+
 ## Deploying to Vercel
 
 1. Push this repo to GitHub
 2. Go to [vercel.com](https://vercel.com) → Import your repository
-3. Add all three environment variables in the Vercel project settings
+3. Add the environment variables from the table above in the Vercel project settings
 4. Deploy — Vercel auto-deploys on every push to `main`
 
 **Update the site URL:** Before going live, update `https://mackenzierosebakes.com` in:
@@ -69,7 +79,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `/` | Homepage — hero, featured gallery, services preview, live Google reviews, about snippet |
 | `/portfolio` | Full photo gallery (fetched from Supabase Storage) |
 | `/services` | All services with details, pricing, and FAQs |
-| `/order` | Order request form (sent via Formspree to your email) |
+| `/order` | Order request form (submissions sent via Resend + PDF proposal) |
 | `/about` | About Mackenzie and her story |
 
 ---

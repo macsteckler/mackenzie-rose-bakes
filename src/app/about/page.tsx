@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { sitePath } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "About — Custom Cake Artist NYC",
   description:
     "Meet Mackenzie, the NYC-based cake artist and baker behind Mackenzie Rose Bakes. Learn her story, her passion for custom cakes, and why New York City loves her creations.",
+  alternates: {
+    canonical: sitePath("/about"),
+  },
   openGraph: {
     title: "About | Mackenzie Rose Bakes",
     description:

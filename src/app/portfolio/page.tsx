@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getPortfolioPhotos } from "@/lib/supabase";
 import PortfolioSlideshow from "@/components/PortfolioSlideshow";
 import Link from "next/link";
+import { sitePath } from "@/lib/site";
 
 export const revalidate = 60;
 
@@ -9,6 +10,9 @@ export const metadata: Metadata = {
   title: "Portfolio — Custom Cakes & Baked Goods NYC",
   description:
     "Browse our gallery of custom cakes, cupcakes, cookies, and celebration treats handcrafted in New York City. Every creation is designed just for you.",
+  alternates: {
+    canonical: sitePath("/portfolio"),
+  },
   openGraph: {
     title: "Portfolio | Mackenzie Rose Bakes",
     description:

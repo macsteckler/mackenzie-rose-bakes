@@ -4,11 +4,27 @@ import { getPortfolioPhotos } from "@/lib/supabase";
 import { getGoogleReviews } from "@/lib/google-reviews";
 import Sprinkles from "@/components/Sprinkles";
 import HomeFeaturedCarousel from "@/components/HomeFeaturedCarousel";
+import { SITE_URL, sitePath } from "@/lib/site";
+
+const homeTitle = "Mackenzie Rose Bakes | Custom Cakes & Sweets NYC";
+const homeDescription =
+  "New York City's sweetest home baker. Handcrafted birthday cakes, wedding cakes, cupcakes, and celebration treats made with love in NYC. Order yours today.";
 
 export const metadata: Metadata = {
-  title: "Mackenzie Rose Bakes | Custom Cakes & Sweets NYC",
-  description:
-    "New York City's sweetest home baker. Handcrafted birthday cakes, wedding cakes, cupcakes, and celebration treats made with love in NYC. Order yours today.",
+  title: homeTitle,
+  description: homeDescription,
+  alternates: {
+    canonical: sitePath(),
+  },
+  openGraph: {
+    title: homeTitle,
+    description: homeDescription,
+    url: SITE_URL,
+  },
+  twitter: {
+    title: homeTitle,
+    description: homeDescription,
+  },
 };
 
 // Inline wave at the bottom of a section — fill = next section's bg color
@@ -45,17 +61,50 @@ const staticReviews = [
 // Accent colors cycled across Google reviews (no accent data in Places API response)
 const accentCycle = ["bg-rose-400", "bg-amber-400", "bg-pink-400", "bg-purple-400", "bg-sky-400"];
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Bakery",
-  name: "Mackenzie Rose Bakes",
-  description: "Custom cakes, cupcakes, and baked goods handcrafted in New York City.",
-  address: { "@type": "PostalAddress", addressLocality: "New York", addressRegion: "NY", addressCountry: "US" },
-  url: "https://www.mackenzierosebakes.com",
-  servesCuisine: "Bakery",
-  priceRange: "$$",
-  areaServed: { "@type": "City", name: "New York City" },
-};
+function buildBakeryJsonLd(googleReviews: Awaited<ReturnType<typeof getGoogleReviews>>) {
+  const placeId = process.env.GOOGLE_PLACE_ID;
+  const sameAsList =
+    placeId && placeId.length > 0
+      ? [`https://www.google.com/maps/place/?q=place_id:${placeId}`]
+      : null;
+
+  const businessPhone = process.env.BUSINESS_PHONE;
+  const showAggregate =
+    googleReviews && googleReviews.total > 0;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Bakery",
+    name: "Mackenzie Rose Bakes",
+    description:
+      "Custom cakes, cupcakes, and baked goods handcrafted in New York City.",
+    image: `${SITE_URL}/opengraph-image`,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "New York",
+      addressRegion: "NY",
+      addressCountry: "US",
+    },
+    url: SITE_URL,
+    servesCuisine: "Bakery",
+    priceRange: "$$",
+    areaServed: { "@type": "City", name: "New York City" },
+    openingHours: "By appointment. Contact for custom order lead times, pickup, and delivery.",
+    ...(businessPhone ? { telephone: businessPhone } : {}),
+    ...(showAggregate
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: googleReviews.rating,
+            reviewCount: googleReviews.total,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
+    ...(sameAsList ? { sameAs: sameAsList } : {}),
+  };
+}
 
 export default async function HomePage() {
   const [photos, googleReviews] = await Promise.all([
@@ -67,6 +116,8 @@ export default async function HomePage() {
   const writeReviewUrl = placeId
     ? `https://search.google.com/local/writereview?placeid=${placeId}`
     : null;
+
+  const jsonLd = buildBakeryJsonLd(googleReviews);
 
   return (
     <>

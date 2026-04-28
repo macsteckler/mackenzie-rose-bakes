@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import OrderForm from "@/components/OrderForm";
+import { sitePath } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Request a Custom Order — NYC Custom Cakes",
   description:
     "Request a custom cake or baked goods order from Mackenzie Rose Bakes in New York City. Fill out our order form and we'll be in touch within 24 hours.",
+  alternates: {
+    canonical: sitePath("/order"),
+  },
   openGraph: {
     title: "Order | Mackenzie Rose Bakes",
     description:
@@ -13,9 +17,68 @@ export const metadata: Metadata = {
   },
 };
 
+const orderFaqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "How far in advance should I place a custom cake order?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Most custom cakes and celebration orders need at least 2 to 3 weeks' notice. Wedding cakes typically need 4 to 6 weeks. Dates fill up around holidays and wedding season, so the sooner you reach out, the better.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Is a deposit required to book my order?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes. A 50% non-refundable deposit secures your order date. We confirm details and availability with you before collecting payment.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What areas do you deliver or serve?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Mackenzie Rose Bakes serves New York City and surrounding areas. Mention your neighborhood or event location in the form so we can confirm pickup, delivery, or other arrangements.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Can you accommodate dietary restrictions or allergies?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "We do our best to work with dietary needs when possible. List any allergies, intolerances, or preferences in the notes on your order request so we can discuss options with you before finalizing the design and flavors.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How soon will I hear back after I submit the form?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "We aim to reply within 24 hours. Mackenzie will personally follow up to discuss your vision, timing, and next steps for your custom order.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What are starting prices for custom cakes and treats?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Starting prices include birthday cakes from about $115, wedding cakes from about $300, cupcake dozens from about $45, and custom cookie assortments from about $36. Final pricing depends on size, design complexity, and flavor choices.",
+      },
+    },
+  ],
+} as const;
+
 export default function OrderPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orderFaqJsonLd) }}
+      />
       {/* Header */}
       <section className="bg-gradient-to-br from-rose-50 via-pink-50 to-amber-50 py-16 md:py-24 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-rose-200/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />

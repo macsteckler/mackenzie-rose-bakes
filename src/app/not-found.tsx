@@ -1,4 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Page not found",
+  description:
+    "We could not find that page. Return to Mackenzie Rose Bakes for custom cakes, cupcakes, and treats in New York City.",
+  robots: {
+    index: false,
+    follow: true,
+  },
+};
 
 export default function NotFound() {
   return (

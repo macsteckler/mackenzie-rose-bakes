@@ -1,8 +1,22 @@
 import { Resend } from "resend";
 import { NextRequest, NextResponse } from "next/server";
+import {
+  buildProposalPdfBuffer,
+  buildProposalPdfFilename,
+  type ProposalOrderInput,
+} from "@/lib/proposalPdf";
+import { uploadProposalPdf } from "@/lib/supabase";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const TO_EMAIL = process.env.ORDER_EMAIL ?? "";
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 
 export async function POST(request: NextRequest) {
   if (!process.env.RESEND_API_KEY || !TO_EMAIL) {
@@ -13,7 +27,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await request.json();
+    const body = (await request.json()) as ProposalOrderInput;
 
     const {
       name,
@@ -30,48 +44,82 @@ export async function POST(request: NextRequest) {
       message,
     } = body;
 
+    const emailRaw = String(email ?? "");
+    const n = escapeHtml(String(name ?? ""));
+    const em = escapeHtml(emailRaw);
+    const ph = phone ? escapeHtml(String(phone)) : "";
+    const ev = escapeHtml(String(eventDate ?? ""));
+    const sv = escapeHtml(String(service ?? ""));
+    const ss = servingSize ? escapeHtml(String(servingSize)) : "";
+    const fl = flavors ? escapeHtml(String(flavors)) : "";
+    const dg = escapeHtml(String(design ?? ""));
+    const dt = dietary ? escapeHtml(String(dietary)) : "";
+    const bud = budget ? escapeHtml(String(budget)) : "";
+    const ha = hearAbout ? escapeHtml(String(hearAbout)) : "";
+    const msg = message ? escapeHtml(String(message)) : "";
+
+    let pdfBuffer: Buffer | null = null;
+    try {
+      pdfBuffer = await buildProposalPdfBuffer(body);
+    } catch (pdfErr) {
+      console.error("[Order] PDF generation failed:", pdfErr);
+    }
+
+    if (pdfBuffer) {
+      const filename = buildProposalPdfFilename(body);
+      const uploaded = await uploadProposalPdf(pdfBuffer, filename);
+      if (!uploaded.ok && uploaded.error) {
+        console.warn("[Order] Proposal upload:", uploaded.error);
+      }
+    }
+
+    const bannerNote = pdfBuffer
+      ? `<p style="color: #1c1917; font-size: 14px; margin: 0 0 16px 0; padding: 12px 14px; background: #fff; border-radius: 8px; border: 1px solid #fecdd3;"><strong style="color: #9f1239;">PDF proposal attached.</strong> Review and forward this document to ${em} when you're ready — it summarizes their inquiry with service-specific highlights.</p>`
+      : `<p style="color: #b45309; font-size: 14px; margin: 0 0 16px 0;">PDF attachment could not be generated; use the summary below.</p>`;
+
     const html = `
       <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; background: #fff8f0; padding: 32px; border-radius: 16px;">
+        ${bannerNote}
         <h1 style="color: #881337; font-size: 28px; margin-bottom: 4px;">🎂 New Order Request</h1>
         <p style="color: #78350f; font-size: 14px; margin-top: 0;">Submitted via mackenzierosebakes.com</p>
         <hr style="border: none; border-top: 2px solid #fecdd3; margin: 20px 0;" />
 
         <h2 style="color: #9f1239; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase;">Contact</h2>
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
-          <tr><td style="padding: 6px 0; color: #57534e; font-size: 14px; width: 140px;"><strong>Name</strong></td><td style="padding: 6px 0; color: #1c1917; font-size: 14px;">${name}</td></tr>
-          <tr><td style="padding: 6px 0; color: #57534e; font-size: 14px;"><strong>Email</strong></td><td style="padding: 6px 0; font-size: 14px;"><a href="mailto:${email}" style="color: #e11d48;">${email}</a></td></tr>
-          ${phone ? `<tr><td style="padding: 6px 0; color: #57534e; font-size: 14px;"><strong>Phone</strong></td><td style="padding: 6px 0; color: #1c1917; font-size: 14px;">${phone}</td></tr>` : ""}
-          <tr><td style="padding: 6px 0; color: #57534e; font-size: 14px;"><strong>Event Date</strong></td><td style="padding: 6px 0; color: #1c1917; font-size: 14px;">${eventDate}</td></tr>
+          <tr><td style="padding: 6px 0; color: #57534e; font-size: 14px; width: 140px;"><strong>Name</strong></td><td style="padding: 6px 0; color: #1c1917; font-size: 14px;">${n}</td></tr>
+          <tr><td style="padding: 6px 0; color: #57534e; font-size: 14px;"><strong>Email</strong></td><td style="padding: 6px 0; font-size: 14px;"><a href="mailto:${encodeURIComponent(emailRaw)}" style="color: #e11d48;">${em}</a></td></tr>
+          ${ph ? `<tr><td style="padding: 6px 0; color: #57534e; font-size: 14px;"><strong>Phone</strong></td><td style="padding: 6px 0; color: #1c1917; font-size: 14px;">${ph}</td></tr>` : ""}
+          <tr><td style="padding: 6px 0; color: #57534e; font-size: 14px;"><strong>Event Date</strong></td><td style="padding: 6px 0; color: #1c1917; font-size: 14px;">${ev}</td></tr>
         </table>
 
         <h2 style="color: #9f1239; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase;">Order Details</h2>
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
-          <tr><td style="padding: 6px 0; color: #57534e; font-size: 14px; width: 140px;"><strong>Service</strong></td><td style="padding: 6px 0; color: #1c1917; font-size: 14px;">${service}</td></tr>
-          ${servingSize ? `<tr><td style="padding: 6px 0; color: #57534e; font-size: 14px;"><strong>Serving Size</strong></td><td style="padding: 6px 0; color: #1c1917; font-size: 14px;">${servingSize}</td></tr>` : ""}
-          ${flavors ? `<tr><td style="padding: 6px 0; color: #57534e; font-size: 14px;"><strong>Flavors</strong></td><td style="padding: 6px 0; color: #1c1917; font-size: 14px;">${flavors}</td></tr>` : ""}
-          ${budget ? `<tr><td style="padding: 6px 0; color: #57534e; font-size: 14px;"><strong>Budget</strong></td><td style="padding: 6px 0; color: #1c1917; font-size: 14px;">${budget}</td></tr>` : ""}
-          ${dietary ? `<tr><td style="padding: 6px 0; color: #57534e; font-size: 14px;"><strong>Dietary Needs</strong></td><td style="padding: 6px 0; color: #1c1917; font-size: 14px;">${dietary}</td></tr>` : ""}
+          <tr><td style="padding: 6px 0; color: #57534e; font-size: 14px; width: 140px;"><strong>Service</strong></td><td style="padding: 6px 0; color: #1c1917; font-size: 14px;">${sv}</td></tr>
+          ${ss ? `<tr><td style="padding: 6px 0; color: #57534e; font-size: 14px;"><strong>Serving Size</strong></td><td style="padding: 6px 0; color: #1c1917; font-size: 14px;">${ss}</td></tr>` : ""}
+          ${fl ? `<tr><td style="padding: 6px 0; color: #57534e; font-size: 14px;"><strong>Flavors</strong></td><td style="padding: 6px 0; color: #1c1917; font-size: 14px;">${fl}</td></tr>` : ""}
+          ${bud ? `<tr><td style="padding: 6px 0; color: #57534e; font-size: 14px;"><strong>Budget</strong></td><td style="padding: 6px 0; color: #1c1917; font-size: 14px;">${bud}</td></tr>` : ""}
+          ${dt ? `<tr><td style="padding: 6px 0; color: #57534e; font-size: 14px;"><strong>Dietary Needs</strong></td><td style="padding: 6px 0; color: #1c1917; font-size: 14px;">${dt}</td></tr>` : ""}
         </table>
 
         <h2 style="color: #9f1239; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase;">Design Vision</h2>
         <div style="background: white; border-left: 4px solid #fda4af; padding: 14px 18px; border-radius: 8px; margin-bottom: 24px;">
-          <p style="color: #1c1917; font-size: 14px; margin: 0; line-height: 1.6;">${design}</p>
+          <p style="color: #1c1917; font-size: 14px; margin: 0; line-height: 1.6;">${dg}</p>
         </div>
 
         ${
-          message
+          msg
             ? `<h2 style="color: #9f1239; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase;">Additional Notes</h2>
         <div style="background: white; border-left: 4px solid #fcd34d; padding: 14px 18px; border-radius: 8px; margin-bottom: 24px;">
-          <p style="color: #1c1917; font-size: 14px; margin: 0; line-height: 1.6;">${message}</p>
+          <p style="color: #1c1917; font-size: 14px; margin: 0; line-height: 1.6;">${msg}</p>
         </div>`
             : ""
         }
 
-        ${hearAbout ? `<p style="color: #a8a29e; font-size: 12px; margin-top: 8px;">Found us via: ${hearAbout}</p>` : ""}
+        ${ha ? `<p style="color: #a8a29e; font-size: 12px; margin-top: 8px;">Found us via: ${ha}</p>` : ""}
 
         <hr style="border: none; border-top: 2px solid #fecdd3; margin: 24px 0;" />
         <p style="color: #a8a29e; font-size: 12px; text-align: center;">
-          Reply directly to <a href="mailto:${email}" style="color: #e11d48;">${email}</a> to respond to this inquiry.
+          Reply directly to <a href="mailto:${encodeURIComponent(emailRaw)}" style="color: #e11d48;">${em}</a> to respond to this inquiry.
         </p>
       </div>
     `;
@@ -79,9 +127,19 @@ export async function POST(request: NextRequest) {
     const { error } = await resend.emails.send({
       from: "Mackenzie Rose Bakes <onboarding@resend.dev>",
       to: TO_EMAIL,
-      replyTo: email,
+      replyTo: emailRaw || undefined,
       subject: `🎂 New Order Request — ${service} for ${name} (${eventDate})`,
       html,
+      attachments:
+        pdfBuffer && pdfBuffer.byteLength > 0
+          ? [
+              {
+                filename: "proposal.pdf",
+                content: pdfBuffer.toString("base64"),
+                contentType: "application/pdf",
+              },
+            ]
+          : undefined,
     });
 
     if (error) {

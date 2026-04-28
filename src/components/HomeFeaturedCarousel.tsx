@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { portfolioImageAlt } from "@/lib/site";
 
 interface Photo {
   url: string;
@@ -47,7 +48,7 @@ export default function HomeFeaturedCarousel({ photos }: { photos: Photo[] }) {
           >
             <Image
               src={photo.url}
-              alt="Custom creation by Mackenzie Rose Bakes"
+              alt={portfolioImageAlt(photo.name, index + i)}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-500"
               sizes="33vw"

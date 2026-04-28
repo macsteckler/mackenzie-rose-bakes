@@ -3,6 +3,7 @@ import { Playfair_Display, Lato } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { SITE_URL } from "@/lib/site";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -38,6 +39,13 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Mackenzie Rose Bakes" }],
   creator: "Mackenzie Rose Bakes",
+  alternates: {
+    canonical: SITE_URL,
+  },
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png" }],
+    apple: [{ url: "/apple-icon.png", type: "image/png" }],
+  },
   // Uses the live Vercel URL automatically; falls back to custom domain once connected
   metadataBase: new URL(
     process.env.VERCEL_URL
