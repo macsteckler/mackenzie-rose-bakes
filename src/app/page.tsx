@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getPortfolioPhotos } from "@/lib/supabase";
+import { getPublishedPortfolioPhotos } from "@/lib/supabase/public";
 import { getGoogleReviews } from "@/lib/google-reviews";
 import Sprinkles from "@/components/Sprinkles";
 import HomeFeaturedCarousel from "@/components/HomeFeaturedCarousel";
@@ -108,7 +108,7 @@ function buildBakeryJsonLd(googleReviews: Awaited<ReturnType<typeof getGoogleRev
 
 export default async function HomePage() {
   const [photos, googleReviews] = await Promise.all([
-    getPortfolioPhotos(),
+    getPublishedPortfolioPhotos(),
     getGoogleReviews(),
   ]);
 

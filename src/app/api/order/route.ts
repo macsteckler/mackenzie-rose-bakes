@@ -5,10 +5,20 @@ import {
   buildProposalPdfFilename,
   type ProposalOrderInput,
 } from "@/lib/proposalPdf";
-import { uploadProposalPdf } from "@/lib/supabase";
+import {
+  uploadProposalPdf,
+  recordOrderSubmission,
+  getInspirationPhotoSignedUrl,
+  type InspirationPhotoRecord,
+} from "@/lib/supabase/admin";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const TO_EMAIL = process.env.ORDER_EMAIL ?? "";
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const MAX_INSPIRATION_LINKS = 5;
+const MAX_INSPIRATION_PHOTOS = 5;
 
 function escapeHtml(s: string): string {
   return s
@@ -16,6 +26,64 @@ function escapeHtml(s: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+type OrderRequestBody = ProposalOrderInput & {
+  honeypot?: string;
+  submissionId?: string;
+  inspirationLinks?: string[];
+  inspirationPhotos?: InspirationPhotoRecord[];
+};
+
+/** Trims, filters, dedupes, and caps customer-supplied inspiration links. */
+function sanitizeInspirationLinks(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const seen = new Set<string>();
+  const links: string[] = [];
+  for (const item of raw) {
+    if (typeof item !== "string") continue;
+    const trimmed = item.trim().slice(0, 500);
+    if (!trimmed || seen.has(trimmed)) continue;
+    seen.add(trimmed);
+    links.push(trimmed);
+    if (links.length >= MAX_INSPIRATION_LINKS) break;
+  }
+  return links;
+}
+
+function sanitizeInspirationPhotos(
+  raw: unknown,
+  submissionId: string | undefined
+): InspirationPhotoRecord[] {
+  if (!Array.isArray(raw) || !submissionId) return [];
+  const photos: InspirationPhotoRecord[] = [];
+  for (const item of raw) {
+    if (
+      !item ||
+      typeof item !== "object" ||
+      typeof (item as { path?: unknown }).path !== "string"
+    ) {
+      continue;
+    }
+    const candidate = item as InspirationPhotoRecord;
+    // Defense in depth: only accept paths scoped to this submission. The
+    // Supabase layer re-verifies existence/ownership before persisting.
+    if (!candidate.path.startsWith(`${submissionId}/`)) continue;
+    photos.push({
+      path: candidate.path,
+      originalFilename:
+        typeof candidate.originalFilename === "string"
+          ? candidate.originalFilename.slice(0, 200)
+          : undefined,
+      contentType:
+        typeof candidate.contentType === "string"
+          ? candidate.contentType
+          : undefined,
+      size: typeof candidate.size === "number" ? candidate.size : undefined,
+    });
+    if (photos.length >= MAX_INSPIRATION_PHOTOS) break;
+  }
+  return photos;
 }
 
 export async function POST(request: NextRequest) {
@@ -27,7 +95,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = (await request.json()) as ProposalOrderInput;
+    const body = (await request.json()) as OrderRequestBody;
+
+    // Silent honeypot: bots that fill hidden fields get a fake success
+    // response instead of a signal that they were detected.
+    if (typeof body.honeypot === "string" && body.honeypot.trim() !== "") {
+      return NextResponse.json({ success: true });
+    }
 
     const {
       name,
@@ -44,6 +118,16 @@ export async function POST(request: NextRequest) {
       message,
     } = body;
 
+    const submissionId =
+      typeof body.submissionId === "string" && UUID_RE.test(body.submissionId)
+        ? body.submissionId
+        : undefined;
+    const inspirationLinks = sanitizeInspirationLinks(body.inspirationLinks);
+    const inspirationPhotos = sanitizeInspirationPhotos(
+      body.inspirationPhotos,
+      submissionId
+    );
+
     const emailRaw = String(email ?? "");
     const n = escapeHtml(String(name ?? ""));
     const em = escapeHtml(emailRaw);
@@ -58,9 +142,38 @@ export async function POST(request: NextRequest) {
     const ha = hearAbout ? escapeHtml(String(hearAbout)) : "";
     const msg = message ? escapeHtml(String(message)) : "";
 
+    // Persist the submission (and confirm the inspiration uploads really
+    // exist and belong to this submission) before emailing.
+    const saved = await recordOrderSubmission(
+      {
+        submissionId,
+        name,
+        email,
+        phone,
+        eventDate,
+        service,
+        servingSize,
+        flavors,
+        design,
+        dietary,
+        budget,
+        hearAbout,
+        message,
+        inspirationLinks,
+      },
+      inspirationPhotos
+    );
+    if (!saved.ok) {
+      console.warn("[Order] Failed to persist submission:", saved.error);
+    }
+
     let pdfBuffer: Buffer | null = null;
     try {
-      pdfBuffer = await buildProposalPdfBuffer(body);
+      pdfBuffer = await buildProposalPdfBuffer({
+        ...body,
+        inspirationLinks,
+        inspirationPhotoCount: inspirationPhotos.length,
+      });
     } catch (pdfErr) {
       console.error("[Order] PDF generation failed:", pdfErr);
     }
@@ -73,9 +186,55 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Best-effort short-lived links so staff can open inspiration photos
+    // straight from the notification email.
+    const inspirationPhotoLinks = (
+      await Promise.all(
+        inspirationPhotos.map(async (photo) => {
+          const url = await getInspirationPhotoSignedUrl(photo.path);
+          return url
+            ? { url, label: photo.originalFilename || "Inspiration photo" }
+            : null;
+        })
+      )
+    ).filter((p): p is { url: string; label: string } => p !== null);
+
     const bannerNote = pdfBuffer
       ? `<p style="color: #1c1917; font-size: 14px; margin: 0 0 16px 0; padding: 12px 14px; background: #fff; border-radius: 8px; border: 1px solid #fecdd3;"><strong style="color: #9f1239;">PDF proposal attached.</strong> Review and forward this document to ${em} when you're ready — it summarizes their inquiry with service-specific highlights.</p>`
       : `<p style="color: #b45309; font-size: 14px; margin: 0 0 16px 0;">PDF attachment could not be generated; use the summary below.</p>`;
+
+    const inspirationSection =
+      inspirationLinks.length > 0 || inspirationPhotoLinks.length > 0
+        ? `<h2 style="color: #9f1239; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase;">Inspiration</h2>
+        <div style="background: white; border-left: 4px solid #fda4af; padding: 14px 18px; border-radius: 8px; margin-bottom: 24px;">
+          ${
+            inspirationPhotoLinks.length > 0
+              ? `<p style="color: #1c1917; font-size: 14px; margin: 0 0 8px 0;"><strong>${inspirationPhotoLinks.length}</strong> photo${inspirationPhotoLinks.length !== 1 ? "s" : ""} uploaded (links expire in 1 hour):</p>
+          <ul style="margin: 0 0 10px 18px; padding: 0;">
+            ${inspirationPhotoLinks
+              .map(
+                (p) =>
+                  `<li style="margin-bottom: 4px;"><a href="${p.url}" style="color: #e11d48; font-size: 13px;">${escapeHtml(p.label)}</a></li>`
+              )
+              .join("")}
+          </ul>`
+              : ""
+          }
+          ${
+            inspirationLinks.length > 0
+              ? `<p style="color: #1c1917; font-size: 14px; margin: 0 0 8px 0;">Reference link${inspirationLinks.length !== 1 ? "s" : ""}:</p>
+          <ul style="margin: 0; padding: 0 0 0 18px;">
+            ${inspirationLinks
+              .map(
+                (link) =>
+                  `<li style="margin-bottom: 4px;"><a href="${escapeHtml(link)}" style="color: #e11d48; font-size: 13px; word-break: break-all;">${escapeHtml(link)}</a></li>`
+              )
+              .join("")}
+          </ul>`
+              : ""
+          }
+        </div>`
+        : "";
 
     const html = `
       <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; background: #fff8f0; padding: 32px; border-radius: 16px;">
@@ -105,6 +264,8 @@ export async function POST(request: NextRequest) {
         <div style="background: white; border-left: 4px solid #fda4af; padding: 14px 18px; border-radius: 8px; margin-bottom: 24px;">
           <p style="color: #1c1917; font-size: 14px; margin: 0; line-height: 1.6;">${dg}</p>
         </div>
+
+        ${inspirationSection}
 
         ${
           msg

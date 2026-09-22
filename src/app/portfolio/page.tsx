@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getPortfolioPhotos } from "@/lib/supabase";
+import { getPublishedPortfolioPhotos } from "@/lib/supabase/public";
 import PortfolioSlideshow from "@/components/PortfolioSlideshow";
 import Link from "next/link";
 import { sitePath } from "@/lib/site";
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 export default async function PortfolioPage() {
-  const photos = await getPortfolioPhotos();
+  const photos = await getPublishedPortfolioPhotos();
 
   return (
     <>
@@ -65,12 +65,9 @@ export default async function PortfolioPage() {
         <section className="py-8 bg-amber-50 border-y border-amber-100">
           <div className="max-w-3xl mx-auto px-4 text-center">
             <p className="text-amber-700 text-sm">
-              <strong>To add photos:</strong> Upload images to your Supabase
-              Storage &rarr;{" "}
-              <code className="bg-amber-100 px-1.5 py-0.5 rounded">
-                portfolio
-              </code>{" "}
-              bucket. They&apos;ll appear here automatically.
+              <strong>To add photos:</strong> Sign in to the admin dashboard
+              and upload your favorites — they&apos;ll appear here
+              automatically once published.
             </p>
           </div>
         </section>

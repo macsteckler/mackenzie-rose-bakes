@@ -31,6 +31,8 @@ export type ProposalOrderInput = {
   budget?: string;
   hearAbout?: string;
   message?: string;
+  inspirationLinks?: string[];
+  inspirationPhotoCount?: number;
 };
 
 type ServicePdfBlock = {
@@ -353,6 +355,27 @@ function ProposalPdfDocument(
             <Text style={styles.heading}>Additional notes</Text>
             <View style={styles.boxAlt}>
               <Text style={{ fontSize: 10, lineHeight: 1.55 }}>{props.message}</Text>
+            </View>
+          </>
+        ) : null}
+
+        {(props.inspirationLinks && props.inspirationLinks.length > 0) ||
+        (props.inspirationPhotoCount && props.inspirationPhotoCount > 0) ? (
+          <>
+            <Text style={styles.heading}>Inspiration references</Text>
+            <View style={styles.box}>
+              {props.inspirationPhotoCount && props.inspirationPhotoCount > 0 ? (
+                <Text style={{ fontSize: 10, lineHeight: 1.55, marginBottom: props.inspirationLinks?.length ? 6 : 0 }}>
+                  {props.inspirationPhotoCount} inspiration photo
+                  {props.inspirationPhotoCount !== 1 ? "s" : ""} attached to this
+                  inquiry — see the notification email for the private previews.
+                </Text>
+              ) : null}
+              {props.inspirationLinks?.map((link, i) => (
+                <Text key={`${link}-${i}`} style={{ fontSize: 9, lineHeight: 1.6, color: "#1c1917" }}>
+                  {link}
+                </Text>
+              ))}
             </View>
           </>
         ) : null}
