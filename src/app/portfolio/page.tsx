@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getPublishedPortfolioPhotos } from "@/lib/supabase/public";
-import PortfolioSlideshow from "@/components/PortfolioSlideshow";
+import PortfolioGrid from "@/components/PortfolioGrid";
 import Link from "next/link";
 import { sitePath } from "@/lib/site";
 
@@ -41,8 +41,8 @@ export default async function PortfolioPage() {
             <span className="text-rose-500 italic">Creations</span>
           </h1>
           <p className="text-stone-500 text-lg max-w-xl mx-auto">
-            Scroll through our portfolio of custom designs — each one made from
-            scratch, with love, right here in NYC.
+            Browse our feed of custom designs — tap any photo to view it
+            full-size. Newest creations appear first.
           </p>
           {photos.length > 0 && (
             <p className="text-rose-400 text-sm mt-4">
@@ -53,10 +53,10 @@ export default async function PortfolioPage() {
         </div>
       </section>
 
-      {/* Portfolio carousel */}
-      <section className="bg-white py-12 md:py-16">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <PortfolioSlideshow photos={photos} />
+      {/* Portfolio feed */}
+      <section className="bg-white pb-12 md:pb-16">
+        <div className="w-full max-w-[1600px] mx-auto px-1 sm:px-2 md:px-3">
+          <PortfolioGrid photos={photos} />
         </div>
       </section>
 

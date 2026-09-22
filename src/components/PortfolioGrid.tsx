@@ -1,19 +1,50 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { portfolioImageAlt } from "@/lib/site";
+import type { PortfolioPhoto } from "@/lib/supabase/public";
 
-interface Photo {
-  url: string;
-  name: string;
-}
-
-interface PortfolioGridProps {
-  photos: Photo[];
-}
+type PortfolioGridProps = {
+  photos: PortfolioPhoto[];
+};
 
 export default function PortfolioGrid({ photos }: PortfolioGridProps) {
-  const [selected, setSelected] = useState<Photo | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+  const selected =
+    selectedIndex !== null ? photos[selectedIndex] ?? null : null;
+
+  const closeLightbox = useCallback(() => setSelectedIndex(null), []);
+
+  const showPrevious = useCallback(() => {
+    setSelectedIndex((current) =>
+      current === null ? null : Math.max(0, current - 1)
+    );
+  }, []);
+
+  const showNext = useCallback(() => {
+    setSelectedIndex((current) =>
+      current === null ? null : Math.min(photos.length - 1, current + 1)
+    );
+  }, [photos.length]);
+
+  useEffect(() => {
+    if (selectedIndex === null) return;
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft") showPrevious();
+      if (e.key === "ArrowRight") showNext();
+    }
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [selectedIndex, closeLightbox, showPrevious, showNext]);
 
   if (photos.length === 0) {
     return (
@@ -35,59 +66,98 @@ export default function PortfolioGrid({ photos }: PortfolioGridProps) {
 
   return (
     <>
-      {/* Masonry-style grid */}
-      <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-        {photos.map((photo, i) => (
-          <div
+      {/* Instagram-style square grid */}
+      <div className="grid grid-cols-3 gap-1 sm:gap-1.5 md:gap-2">
+        {photos.map((photo, index) => (
+          <button
             key={photo.name}
-            className="break-inside-avoid relative overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group"
-            onClick={() => setSelected(photo)}
+            type="button"
+            onClick={() => setSelectedIndex(index)}
+            className="relative aspect-square overflow-hidden bg-stone-100 group focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
+            aria-label={`View photo ${index + 1} of ${photos.length}`}
           >
-            <div
-              className="relative w-full"
-              style={{ paddingBottom: i % 3 === 0 ? "130%" : i % 3 === 1 ? "100%" : "80%" }}
-            >
-              <Image
-                src={photo.url}
-                alt={`Custom cake by Mackenzie Rose Bakes`}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
-                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-rose-950/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
-                <span className="text-white text-xs font-medium">
-                  View full size →
-                </span>
-              </div>
-            </div>
-          </div>
+            <Image
+              src={photo.url}
+              alt={
+                photo.altText ?? portfolioImageAlt(photo.name, index)
+              }
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              sizes="33vw"
+            />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+          </button>
         ))}
       </div>
 
       {/* Lightbox */}
-      {selected && (
+      {selected && selectedIndex !== null && (
         <div
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 md:p-8"
-          onClick={() => setSelected(null)}
+          className="fixed inset-0 z-50 bg-black/90 flex flex-col"
+          onClick={closeLightbox}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Photo viewer"
         >
-          <div
-            className="relative max-w-4xl max-h-[90vh] w-full rounded-2xl overflow-hidden shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Image
-              src={selected.url}
-              alt="Custom cake by Mackenzie Rose Bakes"
-              width={1200}
-              height={900}
-              className="w-full h-auto max-h-[80vh] object-contain bg-white"
-            />
+          <div className="flex items-center justify-between px-4 py-3 text-white/80 text-sm shrink-0">
+            <span>
+              {selectedIndex + 1} / {photos.length}
+            </span>
             <button
-              className="absolute top-3 right-3 bg-white/90 hover:bg-white text-rose-950 rounded-full w-9 h-9 flex items-center justify-center text-lg font-bold shadow-md transition-colors"
-              onClick={() => setSelected(null)}
+              type="button"
+              onClick={closeLightbox}
+              className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl font-light transition-colors"
               aria-label="Close"
             >
               ×
             </button>
+          </div>
+
+          <div className="flex-1 flex items-center justify-center px-4 pb-4 min-h-0 relative">
+            {selectedIndex > 0 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  showPrevious();
+                }}
+                className="absolute left-2 md:left-6 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-colors"
+                aria-label="Previous photo"
+              >
+                ‹
+              </button>
+            )}
+
+            <div
+              className="relative w-full max-w-3xl max-h-full aspect-square md:aspect-auto md:max-h-[min(80vh,900px)]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image
+                src={selected.url}
+                alt={
+                  selected.altText ??
+                  portfolioImageAlt(selected.name, selectedIndex)
+                }
+                width={1200}
+                height={1200}
+                className="w-full h-full object-contain"
+                priority
+              />
+            </div>
+
+            {selectedIndex < photos.length - 1 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  showNext();
+                }}
+                className="absolute right-2 md:right-6 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-colors"
+                aria-label="Next photo"
+              >
+                ›
+              </button>
+            )}
           </div>
         </div>
       )}

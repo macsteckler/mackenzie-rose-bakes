@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { requireAdminUser } from "@/lib/admin-auth";
 import { createClient } from "@/lib/supabase/server";
 import {
-  uploadPortfolioPhotos,
+  registerPortfolioPhotos,
   updatePortfolioPhoto,
   movePortfolioPhoto,
   reorderPortfolioPhotos,
@@ -13,13 +13,6 @@ import {
 } from "@/lib/supabase/admin";
 
 const MAX_UPLOAD_FILES = 20;
-const MAX_UPLOAD_FILE_BYTES = 15 * 1024 * 1024;
-const ALLOWED_UPLOAD_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-]);
 
 function revalidatePublicPortfolioPaths() {
   revalidatePath("/");
@@ -30,44 +23,26 @@ function revalidatePublicPortfolioPaths() {
 export type UploadActionResult = { uploaded: number; errors: string[] };
 
 /**
- * Uploads one or more portfolio photos. Re-verifies the admin session on
- * every call — a page-level check does not protect Server Actions invoked
- * from it.
+ * Records portfolio photos that were uploaded directly to Supabase Storage
+ * from the browser (avoids Vercel's request body size limit on Server Actions).
  */
-export async function uploadPortfolioPhotosAction(
-  formData: FormData
+export async function registerPortfolioPhotosAction(
+  storagePaths: string[]
 ): Promise<UploadActionResult> {
   await requireAdminUser();
 
-  const entries = formData.getAll("files").filter((f): f is File => f instanceof File);
-  if (entries.length === 0) {
-    return { uploaded: 0, errors: ["No files were selected."] };
+  if (!Array.isArray(storagePaths) || storagePaths.length === 0) {
+    return { uploaded: 0, errors: ["No uploaded photos to register."] };
   }
 
-  const errors: string[] = [];
-  const files: { filename: string; contentType: string; buffer: Buffer }[] = [];
+  const paths = storagePaths
+    .filter((path): path is string => typeof path === "string")
+    .slice(0, MAX_UPLOAD_FILES);
 
-  for (const file of entries.slice(0, MAX_UPLOAD_FILES)) {
-    if (!ALLOWED_UPLOAD_TYPES.has(file.type)) {
-      errors.push(`${file.name}: unsupported file type.`);
-      continue;
-    }
-    if (file.size > MAX_UPLOAD_FILE_BYTES) {
-      errors.push(`${file.name}: file is larger than 15MB.`);
-      continue;
-    }
-    const arrayBuffer = await file.arrayBuffer();
-    files.push({
-      filename: file.name,
-      contentType: file.type,
-      buffer: Buffer.from(arrayBuffer),
-    });
-  }
-
-  const result = await uploadPortfolioPhotos(files);
+  const result = await registerPortfolioPhotos(paths);
   revalidatePublicPortfolioPaths();
 
-  return { uploaded: result.uploaded, errors: [...errors, ...result.errors] };
+  return { uploaded: result.uploaded, errors: result.errors };
 }
 
 export async function updatePortfolioPhotoDetailsAction(

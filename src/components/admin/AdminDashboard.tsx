@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
-  uploadPortfolioPhotosAction,
+  registerPortfolioPhotosAction,
   updatePortfolioPhotoDetailsAction,
   setPortfolioPhotoPublishedAction,
   reorderPortfolioPhotosAction,
@@ -12,7 +12,10 @@ import {
   signOutAdminAction,
   type UploadActionResult,
 } from "@/app/admin/actions";
+import { createClient } from "@/lib/supabase/client";
 import type { AdminPortfolioPhoto } from "@/lib/supabase/admin";
+
+const MAX_UPLOAD_FILES = 20;
 
 type Props = {
   adminEmail: string;
@@ -37,15 +40,84 @@ export default function AdminDashboard({ adminEmail, initialPhotos }: Props) {
     setPhotos(initialPhotos);
   }, [initialPhotos]);
 
-  async function handleUpload(formData: FormData) {
+  async function handleUpload(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const files = Array.from(fileInputRef.current?.files ?? []);
+    if (files.length === 0) return;
+
     setIsUploading(true);
     setUploadResult(null);
+
+    const errors: string[] = [];
+    const uploadedPaths: string[] = [];
+
     try {
-      const result = await uploadPortfolioPhotosAction(formData);
-      setUploadResult(result);
+      const res = await fetch("/api/admin/portfolio-upload-urls", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          files: files.slice(0, MAX_UPLOAD_FILES).map((file) => ({
+            filename: file.name,
+            contentType: file.type,
+            size: file.size,
+          })),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setUploadResult({
+          uploaded: 0,
+          errors: [data?.error ?? "Failed to prepare uploads."],
+        });
+        return;
+      }
+
+      if (Array.isArray(data.errors)) {
+        errors.push(...data.errors);
+      }
+
+      const targets = (data.targets ?? []) as Array<{
+        path: string;
+        token: string;
+        filename: string;
+      }>;
+
+      const supabase = createClient();
+      for (const target of targets) {
+        const file = files.find((f) => f.name === target.filename);
+        if (!file) continue;
+
+        const { error } = await supabase.storage
+          .from("portfolio")
+          .uploadToSignedUrl(target.path, target.token, file);
+
+        if (error) {
+          errors.push(`${file.name}: ${error.message}`);
+          continue;
+        }
+        uploadedPaths.push(target.path);
+      }
+
+      if (uploadedPaths.length === 0) {
+        setUploadResult({ uploaded: 0, errors: errors.length ? errors : ["Upload failed."] });
+        return;
+      }
+
+      const registered = await registerPortfolioPhotosAction(uploadedPaths);
+      setUploadResult({
+        uploaded: registered.uploaded,
+        errors: [...errors, ...registered.errors],
+      });
+
       if (fileInputRef.current) fileInputRef.current.value = "";
       setSelectedCount(0);
       router.refresh();
+    } catch {
+      setUploadResult({
+        uploaded: uploadedPaths.length,
+        errors: [...errors, "Unexpected upload error."],
+      });
     } finally {
       setIsUploading(false);
     }
@@ -156,16 +228,13 @@ export default function AdminDashboard({ adminEmail, initialPhotos }: Props) {
             Upload New Photos
           </h2>
           <form
-            action={(formData) => {
-              void handleUpload(formData);
-            }}
+            onSubmit={handleUpload}
             className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center"
           >
             <input
               ref={fileInputRef}
               id="portfolio-upload-input"
               type="file"
-              name="files"
               multiple
               accept="image/jpeg,image/png,image/webp,image/gif"
               required

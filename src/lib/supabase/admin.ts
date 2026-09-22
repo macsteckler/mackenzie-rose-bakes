@@ -24,6 +24,15 @@ const PORTFOLIO_BUCKET = "portfolio";
 const PROPOSALS_BUCKET = "proposals";
 const INSPIRATIONS_BUCKET = "order-inspirations";
 
+const MAX_PORTFOLIO_UPLOAD_FILES = 20;
+const MAX_PORTFOLIO_FILE_BYTES = 15 * 1024 * 1024;
+const ALLOWED_PORTFOLIO_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
+
 const MAX_INSPIRATION_FILES = 5;
 const MAX_INSPIRATION_FILE_BYTES = 8 * 1024 * 1024;
 const ALLOWED_INSPIRATION_TYPES = new Set([
@@ -112,15 +121,90 @@ export async function listPortfolioPhotosForAdmin(): Promise<
   }));
 }
 
-export type PortfolioUploadFile = {
+export type PortfolioUploadRequest = {
   filename: string;
   contentType: string;
-  buffer: Buffer;
+  size: number;
 };
 
-/** Uploads new portfolio images to Storage and inserts their metadata rows. */
-export async function uploadPortfolioPhotos(
-  files: PortfolioUploadFile[]
+export type PortfolioUploadTarget = {
+  path: string;
+  token: string;
+  signedUrl: string;
+  filename: string;
+};
+
+function portfolioStoragePath(filename: string): string {
+  return `${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 8)}-${safeStorageName(filename)}`;
+}
+
+function isSafePortfolioPath(path: string): boolean {
+  return (
+    /^[0-9]+-[a-z0-9]+-[^/\\]+$/.test(path) &&
+    !path.includes("..") &&
+    !path.includes("/")
+  );
+}
+
+/**
+ * Issues signed upload URLs for the admin dashboard. Files upload directly
+ * from the browser to Supabase Storage so large images never pass through
+ * Vercel's ~4.5MB Server Action / serverless body limit.
+ */
+export async function createPortfolioUploadTargets(
+  files: PortfolioUploadRequest[]
+): Promise<{ targets: PortfolioUploadTarget[]; errors: string[] }> {
+  const admin = getAdminClient();
+  if (!admin) return { targets: [], errors: ["Storage is not configured."] };
+
+  const errors: string[] = [];
+  const accepted = files.slice(0, MAX_PORTFOLIO_UPLOAD_FILES);
+  if (files.length > MAX_PORTFOLIO_UPLOAD_FILES) {
+    errors.push(
+      `Only the first ${MAX_PORTFOLIO_UPLOAD_FILES} photos were accepted.`
+    );
+  }
+
+  const targets: PortfolioUploadTarget[] = [];
+
+  for (const file of accepted) {
+    if (!ALLOWED_PORTFOLIO_TYPES.has(file.contentType)) {
+      errors.push(`${file.filename}: unsupported file type.`);
+      continue;
+    }
+    if (file.size > MAX_PORTFOLIO_FILE_BYTES) {
+      errors.push(`${file.filename}: file is larger than 15MB.`);
+      continue;
+    }
+
+    const path = portfolioStoragePath(file.filename);
+    const { data, error } = await admin.storage
+      .from(PORTFOLIO_BUCKET)
+      .createSignedUploadUrl(path);
+
+    if (error || !data) {
+      errors.push(
+        `${file.filename}: ${error?.message ?? "failed to create an upload URL."}`
+      );
+      continue;
+    }
+
+    targets.push({
+      path,
+      token: data.token,
+      signedUrl: data.signedUrl,
+      filename: file.filename,
+    });
+  }
+
+  return { targets, errors };
+}
+
+/** Inserts metadata rows for portfolio objects already uploaded to Storage. */
+export async function registerPortfolioPhotos(
+  storagePaths: string[]
 ): Promise<{ uploaded: number; errors: string[] }> {
   const admin = getAdminClient();
   if (!admin) return { uploaded: 0, errors: ["Storage is not configured."] };
@@ -128,43 +212,76 @@ export async function uploadPortfolioPhotos(
   const errors: string[] = [];
   let uploaded = 0;
 
-  const { data: maxRow } = await admin
-    .from("bakery_portfolio_photos")
-    .select("display_order")
-    .order("display_order", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const uniquePaths = [...new Set(storagePaths)].slice(0, MAX_PORTFOLIO_UPLOAD_FILES);
+  const validPaths: string[] = [];
 
-  let nextOrder = ((maxRow?.display_order as number | undefined) ?? -1) + 1;
-
-  for (const file of files) {
-    const path = `${Date.now()}-${Math.random()
-      .toString(36)
-      .slice(2, 8)}-${safeStorageName(file.filename)}`;
-
-    const { error: uploadError } = await admin.storage
-      .from(PORTFOLIO_BUCKET)
-      .upload(path, file.buffer, {
-        contentType: file.contentType,
-        upsert: false,
-      });
-
-    if (uploadError) {
-      errors.push(`${file.filename}: ${uploadError.message}`);
+  for (const path of uniquePaths) {
+    if (!isSafePortfolioPath(path)) {
+      errors.push(`${path}: invalid storage path.`);
       continue;
     }
 
+    const { data: exists, error: existsError } = await admin.storage
+      .from(PORTFOLIO_BUCKET)
+      .exists(path);
+
+    if (existsError || !exists) {
+      errors.push(`${path}: upload not found in storage.`);
+      continue;
+    }
+
+    validPaths.push(path);
+  }
+
+  if (validPaths.length === 0) {
+    return { uploaded: 0, errors };
+  }
+
+  // Prepend new photos at the top. Reverse so the last file in the batch
+  // (most recently uploaded) lands at display_order 0.
+  const pathsToPrepend = [...validPaths].reverse();
+
+  const { data: existingRows, error: rowsError } = await admin
+    .from("bakery_portfolio_photos")
+    .select("id, display_order")
+    .order("display_order", { ascending: true });
+
+  if (rowsError || !existingRows) {
+    return {
+      uploaded: 0,
+      errors: [...errors, rowsError?.message ?? "Failed to load existing photos."],
+    };
+  }
+
+  const shiftBy = pathsToPrepend.length;
+  const shiftResults = await Promise.all(
+    existingRows.map((row) =>
+      admin
+        .from("bakery_portfolio_photos")
+        .update({ display_order: (row.display_order as number) + shiftBy })
+        .eq("id", row.id as string)
+    )
+  );
+
+  const shiftFailed = shiftResults.find((result) => result.error);
+  if (shiftFailed?.error) {
+    return { uploaded: 0, errors: [...errors, shiftFailed.error.message] };
+  }
+
+  for (let i = 0; i < pathsToPrepend.length; i++) {
     const { error: insertError } = await admin
       .from("bakery_portfolio_photos")
-      .insert({ storage_path: path, is_published: true, display_order: nextOrder });
+      .insert({
+        storage_path: pathsToPrepend[i],
+        is_published: true,
+        display_order: i,
+      });
 
     if (insertError) {
-      errors.push(`${file.filename}: ${insertError.message}`);
-      await admin.storage.from(PORTFOLIO_BUCKET).remove([path]);
+      errors.push(`${pathsToPrepend[i]}: ${insertError.message}`);
       continue;
     }
 
-    nextOrder += 1;
     uploaded += 1;
   }
 
