@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import SocialLinks from "@/components/SocialLinks";
+import { SERVICE_PAGES } from "@/lib/site";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -77,56 +79,99 @@ export default function Navbar() {
 
             {/* Desktop Nav */}
             <div className="hidden md:flex items-center gap-8">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`text-sm font-medium tracking-wide transition-colors duration-200 relative group ${
-                    pathname === link.href
-                      ? "text-rose-600"
-                      : "text-stone-700 hover:text-rose-500"
-                  }`}
-                >
-                  {link.label}
-                  <span
-                    className={`absolute -bottom-1 left-0 h-0.5 bg-rose-400 transition-all duration-200 ${
-                      pathname === link.href
-                        ? "w-full"
-                        : "w-0 group-hover:w-full"
+              {navLinks.map((link) => {
+                const isServices = link.href === "/services";
+                const isActive =
+                  pathname === link.href ||
+                  (isServices && SERVICE_PAGES.some((p) => p.href === pathname));
+                const navLink = (
+                  <Link
+                    href={link.href}
+                    className={`text-sm font-medium tracking-wide transition-colors duration-200 relative group ${
+                      isActive
+                        ? "text-rose-600"
+                        : "text-stone-700 hover:text-rose-500"
                     }`}
-                  />
-                </Link>
-              ))}
+                  >
+                    {link.label}
+                    {isServices && <span aria-hidden="true" className="ml-1 text-[10px]">▾</span>}
+                    <span
+                      className={`absolute -bottom-1 left-0 h-0.5 bg-rose-400 transition-all duration-200 ${
+                        isActive ? "w-full" : "w-0 group-hover:w-full"
+                      }`}
+                    />
+                  </Link>
+                );
+                if (!isServices) return <div key={link.href}>{navLink}</div>;
+                return (
+                  <div key={link.href} className="relative group/menu">
+                    {navLink}
+                    {/* Dropdown — opens on hover or keyboard focus */}
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full pt-4 invisible opacity-0 group-hover/menu:visible group-hover/menu:opacity-100 group-focus-within/menu:visible group-focus-within/menu:opacity-100 transition-opacity duration-150">
+                      <ul className="w-60 bg-white rounded-2xl shadow-lg border border-rose-100 p-2">
+                        {SERVICE_PAGES.map((page) => (
+                          <li key={page.href}>
+                            <Link
+                              href={page.href}
+                              className={`block px-4 py-2.5 rounded-xl text-sm transition-colors ${
+                                pathname === page.href
+                                  ? "bg-rose-50 text-rose-600"
+                                  : "text-stone-700 hover:bg-rose-50 hover:text-rose-500"
+                              }`}
+                            >
+                              {page.label}
+                            </Link>
+                          </li>
+                        ))}
+                        <li className="border-t border-rose-50 mt-1 pt-1">
+                          <Link
+                            href="/services"
+                            className="block px-4 py-2.5 rounded-xl text-sm text-rose-500 font-semibold hover:bg-rose-50"
+                          >
+                            All Services &amp; Pricing →
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                );
+              })}
+              <SocialLinks variant="header" className="-mx-2" />
               <Link
                 href="/order"
-                className="ml-2 px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold rounded-full transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                className="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold rounded-full transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5"
               >
                 Order Now
               </Link>
             </div>
 
-            {/* Mobile Hamburger */}
-            <button
-              className="md:hidden flex flex-col justify-center items-center w-10 h-10 gap-1.5 rounded-lg hover:bg-rose-50 transition-colors"
-              onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Toggle menu"
-            >
-              <span
-                className={`block h-0.5 bg-rose-600 transition-all duration-300 ${
-                  menuOpen ? "w-6 rotate-45 translate-y-2" : "w-6"
-                }`}
-              />
-              <span
-                className={`block h-0.5 bg-rose-600 transition-all duration-300 ${
-                  menuOpen ? "w-6 opacity-0" : "w-5"
-                }`}
-              />
-              <span
-                className={`block h-0.5 bg-rose-600 transition-all duration-300 ${
-                  menuOpen ? "w-6 -rotate-45 -translate-y-2" : "w-6"
-                }`}
-              />
-            </button>
+            {/* Mobile socials + hamburger */}
+            <div className="md:hidden flex items-center gap-1">
+              <div className="hidden min-[380px]:block">
+                <SocialLinks variant="compact" />
+              </div>
+              <button
+                className="flex flex-col justify-center items-center w-10 h-10 gap-1.5 rounded-lg hover:bg-rose-50 transition-colors"
+                onClick={() => setMenuOpen(!menuOpen)}
+                aria-label="Toggle menu"
+              >
+                <span
+                  className={`block h-0.5 bg-rose-600 transition-all duration-300 ${
+                    menuOpen ? "w-6 rotate-45 translate-y-2" : "w-6"
+                  }`}
+                />
+                <span
+                  className={`block h-0.5 bg-rose-600 transition-all duration-300 ${
+                    menuOpen ? "w-6 opacity-0" : "w-5"
+                  }`}
+                />
+                <span
+                  className={`block h-0.5 bg-rose-600 transition-all duration-300 ${
+                    menuOpen ? "w-6 -rotate-45 -translate-y-2" : "w-6"
+                  }`}
+                />
+              </button>
+            </div>
           </div>
         </nav>
       </header>
@@ -162,6 +207,22 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
+              <p className="mt-4 px-4 text-[11px] font-semibold uppercase tracking-widest text-stone-400">
+                Our Cakes
+              </p>
+              {SERVICE_PAGES.map((page) => (
+                <Link
+                  key={page.href}
+                  href={page.href}
+                  className={`py-2.5 px-4 rounded-xl text-sm transition-colors ${
+                    pathname === page.href
+                      ? "bg-rose-50 text-rose-600"
+                      : "text-stone-600 hover:bg-rose-50 hover:text-rose-500"
+                  }`}
+                >
+                  {page.label}
+                </Link>
+              ))}
             </div>
             <div className="mt-auto">
               <Link
@@ -170,8 +231,9 @@ export default function Navbar() {
               >
                 Order Now
               </Link>
+              <SocialLinks variant="menu" className="mt-5" />
               <p className="text-center text-xs text-stone-400 mt-4">
-                Serving New York City & surrounding areas
+                Midtown East & UES · Delivering across NYC
               </p>
             </div>
           </div>

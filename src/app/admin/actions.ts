@@ -13,6 +13,7 @@ import {
 } from "@/lib/supabase/admin";
 
 const MAX_UPLOAD_FILES = 20;
+const MAX_PHOTO_TEXT_LENGTH = 500;
 
 function revalidatePublicPortfolioPaths() {
   revalidatePath("/");
@@ -50,7 +51,14 @@ export async function updatePortfolioPhotoDetailsAction(
   updates: { altText?: string; caption?: string }
 ): Promise<{ ok: boolean; error?: string }> {
   await requireAdminUser();
-  const result = await updatePortfolioPhoto(id, updates);
+  // Blank fields become null so the public site falls back to generated alt
+  // text instead of rendering alt="" (which hides the image from search).
+  const clean = (value?: string) =>
+    value === undefined ? undefined : value.trim().slice(0, MAX_PHOTO_TEXT_LENGTH) || null;
+  const result = await updatePortfolioPhoto(id, {
+    altText: clean(updates.altText),
+    caption: clean(updates.caption),
+  });
   revalidatePublicPortfolioPaths();
   return result.ok ? { ok: true } : { ok: false, error: result.error };
 }

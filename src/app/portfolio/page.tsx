@@ -2,23 +2,16 @@ import type { Metadata } from "next";
 import { getPublishedPortfolioPhotos } from "@/lib/supabase/public";
 import PortfolioGrid from "@/components/PortfolioGrid";
 import Link from "next/link";
-import { sitePath } from "@/lib/site";
+import { pageMetadata } from "@/lib/site";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Portfolio — Custom Cakes & Baked Goods NYC",
+export const metadata: Metadata = pageMetadata({
+  title: "Cake Portfolio — Custom Cakes NYC",
   description:
     "Browse our gallery of custom cakes, cupcakes, cookies, and celebration treats handcrafted in New York City. Every creation is designed just for you.",
-  alternates: {
-    canonical: sitePath("/portfolio"),
-  },
-  openGraph: {
-    title: "Portfolio | Mackenzie Rose Bakes",
-    description:
-      "Browse our gallery of custom cakes and baked goods made in NYC.",
-  },
-};
+  path: "/portfolio",
+});
 
 export default async function PortfolioPage() {
   const photos = await getPublishedPortfolioPhotos();

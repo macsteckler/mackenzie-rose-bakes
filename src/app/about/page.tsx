@@ -1,20 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { sitePath } from "@/lib/site";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "About — Custom Cake Artist NYC",
+export const metadata: Metadata = pageMetadata({
+  title: "About Mackenzie — NYC Cake Artist",
   description:
-    "Meet Mackenzie, the NYC-based cake artist and baker behind Mackenzie Rose Bakes. Learn her story, her passion for custom cakes, and why New York City loves her creations.",
-  alternates: {
-    canonical: sitePath("/about"),
-  },
-  openGraph: {
-    title: "About | Mackenzie Rose Bakes",
-    description:
-      "Meet Mackenzie — NYC cake artist, baker, and the heart behind Mackenzie Rose Bakes.",
-  },
-};
+    "Meet Mackenzie — NYC cake artist, Gramercy Tavern pastry cook, and Institute of Culinary Education student — the baker behind Mackenzie Rose Bakes custom cakes.",
+  path: "/about",
+});
 
 const values = [
   {
@@ -80,36 +73,34 @@ export default function AboutPage() {
           </h2>
           <div className="space-y-4 text-stone-600 leading-relaxed text-left">
             <p>
-              I&apos;ve been baking for as long as I can remember. Growing
-              up, the kitchen was my happy place — and New York City was the
-              backdrop that inspired my boldest, most colorful creations.
+              I&apos;ve been baking for as long as I can remember. Growing up,
+              the kitchen was my happy place and I was surrounded by talented
+              chefs every day. New York City is the backdrop that inspired my
+              career and drives my creative inspiration.
             </p>
             <p>
               What started as baking for friends and family has grown into
-              something I never expected — creating custom cakes for all
-              kinds of celebrations, right from my home kitchen in the
-              city I love. Every order is a collaboration between us — you
-              bring the vision, I bring it to life with flour, butter, and
-              a whole lot of love.
+              something I never expected, creating custom cakes for all kinds
+              of celebrations, right from my home kitchen in the city I love.
+              Every order is a collaboration between us. You bring your vision
+              and I execute it above and beyond expectations!
             </p>
             <p>
               I&apos;m currently attending the{" "}
               <span className="font-semibold text-rose-700">Institute of Culinary Education</span>{" "}
               in New York City, deepening my skills and bringing everything I
-              learn straight back into my kitchen and into every cake I make.
+              learn straight back into my kitchen and into every cake I make. I
+              also currently work as a pastry cook at{" "}
+              <span className="font-semibold text-rose-700">Gramercy Tavern</span>{" "}
+              as well. Being able to do both of these careers is my dream come
+              true!
             </p>
             <p>
               I believe a cake should be as beautiful as it is delicious.
-              That&apos;s why I never compromise on ingredients and I never
-              stop learning new techniques. From intricate buttercream
-              piping to delicate hand-crafted details, I approach every
-              creation as a piece of art.
-            </p>
-            <p>
-              When I&apos;m not in the kitchen, you&apos;ll find me
-              exploring NYC&apos;s incredible food scene, sketching design
-              ideas in coffee shops, or dreaming up the next wild flavor
-              combination to test on willing taste-testers.
+              That&apos;s why I never compromise on ingredients and I never stop
+              learning new techniques. From intricate buttercream piping to
+              delicate hand-crafted details, I approach every creation as a
+              piece of art.
             </p>
           </div>
           <div className="mt-8 flex flex-wrap gap-4 justify-center">

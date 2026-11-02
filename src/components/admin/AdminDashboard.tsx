@@ -337,23 +337,63 @@ export default function AdminDashboard({ adminEmail, initialPhotos }: Props) {
                       </span>
                     </div>
                     <div className="p-3 space-y-2">
-                      <input
-                        type="text"
-                        defaultValue={photo.altText ?? ""}
-                        placeholder="Alt text (for accessibility & SEO)"
-                        disabled={interactionsDisabled}
-                        onBlur={(e) => {
-                          const value = e.target.value;
-                          if (value !== (photo.altText ?? "")) {
-                            runAction(photo.id, () =>
-                              updatePortfolioPhotoDetailsAction(photo.id, {
-                                altText: value,
-                              })
-                            );
-                          }
-                        }}
-                        className="w-full px-2 py-1.5 text-xs rounded-lg border border-stone-200 focus:border-rose-400 outline-none disabled:opacity-50"
-                      />
+                      <label className="block">
+                        <span className="block text-[11px] font-semibold text-stone-600 mb-1">
+                          Description{" "}
+                          <span className="font-normal text-stone-400">
+                            — shown on hover
+                          </span>
+                        </span>
+                        <textarea
+                          defaultValue={photo.caption ?? ""}
+                          placeholder="e.g. Three-tier pink ombré birthday cake with hand-piped buttercream roses"
+                          rows={3}
+                          maxLength={500}
+                          disabled={interactionsDisabled}
+                          onBlur={(e) => {
+                            const value = e.target.value;
+                            if (value !== (photo.caption ?? "")) {
+                              runAction(photo.id, () =>
+                                updatePortfolioPhotoDetailsAction(photo.id, {
+                                  caption: value,
+                                })
+                              );
+                            }
+                          }}
+                          className="w-full px-2 py-1.5 text-xs rounded-lg border border-stone-200 focus:border-rose-400 outline-none disabled:opacity-50 resize-y"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="block text-[11px] font-semibold text-stone-600 mb-1">
+                          Alt text{" "}
+                          <span className="font-normal text-stone-400">
+                            — for Google &amp; screen readers (optional, uses description if blank)
+                          </span>
+                        </span>
+                        <input
+                          type="text"
+                          defaultValue={photo.altText ?? ""}
+                          placeholder="e.g. Pink ombré birthday cake with buttercream roses"
+                          maxLength={500}
+                          disabled={interactionsDisabled}
+                          onBlur={(e) => {
+                            const value = e.target.value;
+                            if (value !== (photo.altText ?? "")) {
+                              runAction(photo.id, () =>
+                                updatePortfolioPhotoDetailsAction(photo.id, {
+                                  altText: value,
+                                })
+                              );
+                            }
+                          }}
+                          className="w-full px-2 py-1.5 text-xs rounded-lg border border-stone-200 focus:border-rose-400 outline-none disabled:opacity-50"
+                        />
+                      </label>
+                      {!photo.caption && !photo.altText && (
+                        <p className="text-[11px] text-amber-700">
+                          No description yet — add one to help this photo show up in Google Images.
+                        </p>
+                      )}
                       <div className="flex items-center justify-between gap-1.5 pt-1">
                         <label className="flex items-center gap-1.5 text-xs text-stone-600 cursor-pointer">
                           <input

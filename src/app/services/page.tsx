@@ -1,24 +1,34 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { sitePath } from "@/lib/site";
+import { SITE_URL, pageMetadata, sitePath } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Services — Custom Cakes, Cupcakes & More NYC",
-  description:
-    "Explore our full range of custom baked goods in New York City: birthday cakes, wedding cakes, cupcakes, custom cookie assortments, and corporate orders. Starting prices included.",
-  alternates: {
-    canonical: sitePath("/services"),
-  },
-  openGraph: {
-    title: "Services | Mackenzie Rose Bakes",
-    description:
-      "Custom cakes, cupcakes, cookies & more — handcrafted in New York City.",
-  },
+type Service = {
+  id: string;
+  /** Must match an option in OrderForm's service select. */
+  orderService: string;
+  /** Dedicated landing page, when one exists. */
+  page?: string;
+  icon: string;
+  title: string;
+  tagline: string;
+  description: string;
+  features: string[];
+  startingPrice: string;
+  color: string;
 };
 
-const services = [
+export const metadata: Metadata = pageMetadata({
+  title: "Cake Services & Pricing — NYC",
+  description:
+    "Custom birthday cakes from $115, wedding cakes from $300, cupcakes, cookie assortments, and corporate orders — handcrafted in New York City. See services, pricing, and FAQs.",
+  path: "/services",
+});
+
+const services: Service[] = [
   {
     id: "birthday-cakes",
+    orderService: "Birthday Cake",
+    page: "/custom-cakes",
     icon: "🎂",
     title: "Birthday Cakes",
     tagline: "The centerpiece of every celebration",
@@ -36,6 +46,8 @@ const services = [
   },
   {
     id: "wedding-cakes",
+    orderService: "Wedding Cake",
+    page: "/wedding-cakes",
     icon: "💒",
     title: "Wedding Cakes",
     tagline: "The sweetest part of your big day",
@@ -53,6 +65,7 @@ const services = [
   },
   {
     id: "cupcakes",
+    orderService: "Cupcakes",
     icon: "🧁",
     title: "Cupcakes",
     tagline: "Individual perfection in every bite",
@@ -70,6 +83,7 @@ const services = [
   },
   {
     id: "cookie-assortment",
+    orderService: "Custom Cookie Assortment",
     icon: "🍪",
     title: "Custom Cookie Assortment",
     tagline: "Adorable, delicious, giftable",
@@ -87,6 +101,8 @@ const services = [
   },
   {
     id: "celebration-cakes",
+    orderService: "Celebration Cake",
+    page: "/custom-cakes",
     icon: "🎉",
     title: "Celebration Cakes",
     tagline: "Every milestone deserves a cake",
@@ -104,6 +120,7 @@ const services = [
   },
   {
     id: "custom-vision",
+    orderService: "Your Vision, Made Real (Custom / Misc)",
     icon: "✨",
     title: "Your Vision, Made Real",
     tagline: "No idea too bold, no dream too sweet",
@@ -121,6 +138,8 @@ const services = [
   },
   {
     id: "corporate",
+    orderService: "Corporate / Bulk Order",
+    page: "/corporate-cakes",
     icon: "🏢",
     title: "Corporate & Bulk Orders",
     tagline: "Branded treats for your team & events",
@@ -192,7 +211,7 @@ const faqs = [
   },
   {
     q: "Do you deliver?",
-    a: "Yes, we offer delivery within New York City and select surrounding areas. Delivery fees vary by distance. Pickup is also available.",
+    a: "Yes! We're based in Midtown East and the Upper East Side and deliver anywhere in New York City — Manhattan, Brooklyn, Queens, the Bronx, and Staten Island. Delivery fees vary by distance. Pickup is also available.",
   },
   {
     q: "What's your payment policy?",
@@ -200,9 +219,57 @@ const faqs = [
   },
 ];
 
+// Structured data mirrors the visible content below (Google requires FAQ and
+// offer markup to match what's on the page).
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((faq) => ({
+    "@type": "Question",
+    name: faq.q,
+    acceptedAnswer: { "@type": "Answer", text: faq.a },
+  })),
+};
+
+const servicesJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  itemListElement: services.map((service, i) => {
+    const minPrice = service.startingPrice.match(/\$(\d+)/)?.[1];
+    return {
+      "@type": "ListItem",
+      position: i + 1,
+      item: {
+        "@type": "Service",
+        name: service.title,
+        description: service.description,
+        url: sitePath(`/services#${service.id}`),
+        provider: { "@id": `${SITE_URL}/#bakery` },
+        areaServed: { "@type": "City", name: "New York City" },
+        ...(minPrice
+          ? {
+              offers: {
+                "@type": "Offer",
+                priceSpecification: {
+                  "@type": "PriceSpecification",
+                  minPrice: Number(minPrice),
+                  priceCurrency: "USD",
+                },
+              },
+            }
+          : {}),
+      },
+    };
+  }),
+};
+
 export default function ServicesPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([faqJsonLd, servicesJsonLd]) }}
+      />
       {/* Header */}
       <section className="bg-gradient-to-br from-rose-50 via-pink-50 to-amber-50 py-16 md:py-24 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-rose-200/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
@@ -215,12 +282,12 @@ export default function ServicesPage() {
             className="text-5xl md:text-6xl font-bold text-rose-950 mb-4"
             style={{ fontFamily: "var(--font-playfair)" }}
           >
-            What We{" "}
-            <span className="text-rose-500 italic">Offer</span>
+            Custom Cakes &amp; Treats in{" "}
+            <span className="text-rose-500 italic">NYC</span>
           </h1>
           <p className="text-stone-500 text-lg max-w-xl mx-auto">
             Every item is made to order, from scratch, with real ingredients —
-            no mixes, no shortcuts. Just delicious, beautiful baked goods.
+            no mixes, no shortcuts — and delivered anywhere in New York City.
           </p>
         </div>
       </section>
@@ -274,13 +341,23 @@ export default function ServicesPage() {
                           </li>
                         ))}
                       </ul>
-                      <Link
-                        href={`/order?service=${encodeURIComponent(service.title)}`}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold rounded-full transition-all duration-200 hover:-translate-y-0.5 shadow-sm hover:shadow-md"
-                      >
-                        Order {service.title}
-                        <span>→</span>
-                      </Link>
+                      <div className="flex flex-wrap items-center gap-4">
+                        <Link
+                          href={`/order?service=${encodeURIComponent(service.orderService)}`}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold rounded-full transition-all duration-200 hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+                        >
+                          Order {service.title}
+                          <span>→</span>
+                        </Link>
+                        {service.page && (
+                          <Link
+                            href={service.page}
+                            className="text-sm font-semibold text-rose-600 hover:text-rose-700 underline underline-offset-4"
+                          >
+                            Learn more
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </article>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import { sendGAEvent } from "@next/third-parties/google";
 import { createClient } from "@/lib/supabase/client";
 
 const serviceOptions = [
@@ -317,6 +318,12 @@ export default function OrderForm() {
         }),
       });
       if (res.ok) {
+        // GA4 recommended lead event — mark it as a key event in GA to track conversions.
+        sendGAEvent("event", "generate_lead", {
+          form_name: "custom_order",
+          service: formData.service,
+          budget: formData.budget,
+        });
         setFormState("success");
       } else {
         setFormState("error");

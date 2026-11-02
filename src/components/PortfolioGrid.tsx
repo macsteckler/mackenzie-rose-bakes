@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
-import { portfolioImageAlt } from "@/lib/site";
+import { portfolioPhotoAlt, portfolioPhotoDescription } from "@/lib/site";
 import type { PortfolioPhoto } from "@/lib/supabase/public";
 
 type PortfolioGridProps = {
@@ -68,26 +68,34 @@ export default function PortfolioGrid({ photos }: PortfolioGridProps) {
     <>
       {/* Instagram-style square grid */}
       <div className="grid grid-cols-3 gap-1 sm:gap-1.5 md:gap-2">
-        {photos.map((photo, index) => (
-          <button
-            key={photo.name}
-            type="button"
-            onClick={() => setSelectedIndex(index)}
-            className="relative aspect-square overflow-hidden bg-stone-100 group focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
-            aria-label={`View photo ${index + 1} of ${photos.length}`}
-          >
-            <Image
-              src={photo.url}
-              alt={
-                photo.altText ?? portfolioImageAlt(photo.name, index)
-              }
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-              sizes="33vw"
-            />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-          </button>
-        ))}
+        {photos.map((photo, index) => {
+          const description = portfolioPhotoDescription(photo);
+          return (
+            <button
+              key={photo.name}
+              type="button"
+              onClick={() => setSelectedIndex(index)}
+              className="relative aspect-square overflow-hidden bg-stone-100 group focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
+            >
+              <Image
+                src={photo.url}
+                alt={portfolioPhotoAlt(photo, index)}
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                sizes="33vw"
+              />
+              {description ? (
+                <span className="absolute inset-0 flex items-end bg-gradient-to-t from-rose-950/80 via-rose-950/30 to-transparent p-2 sm:p-4 text-left opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300">
+                  <span className="text-white text-xs sm:text-sm leading-snug line-clamp-3 sm:line-clamp-4">
+                    {description}
+                  </span>
+                </span>
+              ) : (
+                <span className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Lightbox */}
@@ -134,10 +142,7 @@ export default function PortfolioGrid({ photos }: PortfolioGridProps) {
             >
               <Image
                 src={selected.url}
-                alt={
-                  selected.altText ??
-                  portfolioImageAlt(selected.name, selectedIndex)
-                }
+                alt={portfolioPhotoAlt(selected, selectedIndex)}
                 width={1200}
                 height={1200}
                 className="w-full h-full object-contain"
@@ -159,6 +164,15 @@ export default function PortfolioGrid({ photos }: PortfolioGridProps) {
               </button>
             )}
           </div>
+
+          {portfolioPhotoDescription(selected) && (
+            <p
+              className="shrink-0 max-w-3xl mx-auto px-6 pb-6 text-center text-white/85 text-sm leading-relaxed"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {portfolioPhotoDescription(selected)}
+            </p>
+          )}
         </div>
       )}
     </>

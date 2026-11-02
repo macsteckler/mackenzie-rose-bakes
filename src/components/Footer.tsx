@@ -1,4 +1,6 @@
 import Link from "next/link";
+import SocialLinks from "@/components/SocialLinks";
+import { BASE_NEIGHBORHOODS, SERVICE_PAGES, SOCIAL_LINKS } from "@/lib/site";
 
 const footerLinks = [
   {
@@ -9,6 +11,10 @@ const footerLinks = [
       { href: "/services", label: "Services" },
       { href: "/about", label: "About" },
     ],
+  },
+  {
+    heading: "Our Cakes",
+    links: SERVICE_PAGES,
   },
   {
     heading: "Order",
@@ -40,9 +46,9 @@ export default function Footer() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-10">
           {/* Brand */}
-          <div className="md:col-span-2">
+          <div className="sm:col-span-2">
             <Link href="/" className="inline-flex flex-col leading-tight mb-4">
               <span
                 className="text-2xl font-bold text-white tracking-wide"
@@ -56,21 +62,28 @@ export default function Footer() {
             </Link>
             <p className="text-rose-200/80 text-sm leading-relaxed max-w-xs mt-3">
               Handcrafted custom cakes and baked goods for life&apos;s sweetest
-              moments. Proudly serving New York City and surrounding areas.
+              moments. Based in Midtown East & the Upper East Side, delivering across New York City.
             </p>
             <p className="text-rose-300/60 text-xs mt-4">
-              📍 New York City, NY
+              📍 {BASE_NEIGHBORHOODS}, NYC · Delivering to all five boroughs
             </p>
+            <div className="mt-6">
+              <p className="text-white text-sm font-semibold uppercase tracking-widest mb-3">
+                Follow Along
+              </p>
+              <SocialLinks variant="footer" />
+              <p className="text-rose-200/60 text-xs mt-3">
+                {SOCIAL_LINKS.map((s) => `${s.label} ${s.handle}`).join(" · ")}
+              </p>
+            </div>
           </div>
 
           {/* Links */}
           {footerLinks.map((group) => (
             <div key={group.heading}>
-              <h4
-                className="text-white text-sm font-semibold uppercase tracking-widest mb-4"
-              >
+              <p className="text-white text-sm font-semibold uppercase tracking-widest mb-4">
                 {group.heading}
-              </h4>
+              </p>
               <ul className="flex flex-col gap-2">
                 {group.links.map((link) => (
                   <li key={link.href}>
@@ -94,7 +107,7 @@ export default function Footer() {
             reserved.
           </p>
           <p className="text-rose-300/50 text-xs">
-            Custom cakes & baked goods · New York City
+            Custom cakes & baked goods · Midtown East & Upper East Side, NYC
           </p>
         </div>
       </div>

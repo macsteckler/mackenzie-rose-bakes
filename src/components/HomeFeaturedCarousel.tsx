@@ -2,14 +2,10 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { portfolioImageAlt } from "@/lib/site";
+import { portfolioPhotoAlt, portfolioPhotoDescription } from "@/lib/site";
+import type { PortfolioPhoto } from "@/lib/supabase/public";
 
-interface Photo {
-  url: string;
-  name: string;
-}
-
-export default function HomeFeaturedCarousel({ photos }: { photos: Photo[] }) {
+export default function HomeFeaturedCarousel({ photos }: { photos: PortfolioPhoto[] }) {
   const [index, setIndex] = useState(0);
 
   const prev = () => setIndex((i) => Math.max(0, i - 1));
@@ -41,21 +37,29 @@ export default function HomeFeaturedCarousel({ photos }: { photos: Photo[] }) {
   return (
     <div className="relative">
       <div className="grid grid-cols-3 gap-4">
-        {visible.map((photo, i) => (
-          <div
-            key={`${photo.name}-${i}`}
-            className="aspect-[4/5] relative rounded-2xl overflow-hidden shadow-md group"
-          >
-            <Image
-              src={photo.url}
-              alt={portfolioImageAlt(photo.name, index + i)}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
-              sizes="33vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-rose-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </div>
-        ))}
+        {visible.map((photo, i) => {
+          const description = portfolioPhotoDescription(photo);
+          return (
+            <figure
+              key={`${photo.name}-${i}`}
+              className="aspect-[4/5] relative rounded-2xl overflow-hidden shadow-md group"
+            >
+              <Image
+                src={photo.url}
+                alt={portfolioPhotoAlt(photo, index + i)}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                sizes="(max-width: 1024px) 33vw, 320px"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-rose-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              {description && (
+                <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-rose-950/85 via-rose-950/50 to-transparent px-3 pt-10 pb-3 text-white text-xs sm:text-sm leading-snug line-clamp-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  {description}
+                </figcaption>
+              )}
+            </figure>
+          );
+        })}
       </div>
 
       {/* Navigation row */}

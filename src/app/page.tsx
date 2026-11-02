@@ -4,28 +4,18 @@ import { getPublishedPortfolioPhotos } from "@/lib/supabase/public";
 import { getGoogleReviews } from "@/lib/google-reviews";
 import Sprinkles from "@/components/Sprinkles";
 import HomeFeaturedCarousel from "@/components/HomeFeaturedCarousel";
-import { SITE_URL, sitePath } from "@/lib/site";
+import { DELIVERY_BOROUGHS, SITE_NAME, SITE_URL, SOCIAL_LINKS, pageMetadata } from "@/lib/site";
 
 const homeTitle = "Mackenzie Rose Bakes | Custom Cakes & Sweets NYC";
 const homeDescription =
-  "New York City's sweetest home baker. Handcrafted birthday cakes, wedding cakes, cupcakes, and celebration treats made with love in NYC. Order yours today.";
+  "Custom birthday cakes, wedding cakes, cupcakes, and treats from a Midtown East & Upper East Side baker. Made from scratch and delivered anywhere in NYC.";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: homeTitle,
   description: homeDescription,
-  alternates: {
-    canonical: sitePath(),
-  },
-  openGraph: {
-    title: homeTitle,
-    description: homeDescription,
-    url: SITE_URL,
-  },
-  twitter: {
-    title: homeTitle,
-    description: homeDescription,
-  },
-};
+  path: "/",
+  absoluteTitle: true,
+});
 
 // Inline wave at the bottom of a section — fill = next section's bg color
 // Both paths start AND end at y=0 so there's no rectangular bg strip at the edges
@@ -45,11 +35,11 @@ function BottomWave({ fill, bg, flip = false }: { fill: string; bg: string; flip
 }
 
 const services = [
-  { icon: "🎂", title: "Birthday Cakes", desc: "Bold, personalized creations for every age and style.", bg: "bg-rose-100", border: "border-rose-200" },
-  { icon: "💒", title: "Wedding Cakes", desc: "Elegant tiered masterpieces for your perfect day.", bg: "bg-pink-100", border: "border-pink-200" },
-  { icon: "🧁", title: "Cupcakes", desc: "Individual flavors and designs, perfect for any event.", bg: "bg-amber-100", border: "border-amber-200" },
-  { icon: "🍪", title: "Custom Cookie Assortment", desc: "Thoughtfully curated custom cookie assortments for any occasion.", bg: "bg-yellow-100", border: "border-yellow-200" },
-  { icon: "✨", title: "Your Vision, Made Real", desc: "Got a wild idea? Describe your dream and we'll bring it to life.", bg: "bg-purple-100", border: "border-purple-200" },
+  { icon: "🎂", title: "Birthday Cakes", href: "/custom-cakes", desc: "Bold, personalized creations for every age and style.", bg: "bg-rose-100", border: "border-rose-200" },
+  { icon: "💒", title: "Wedding Cakes", href: "/wedding-cakes", desc: "Elegant tiered masterpieces for your perfect day.", bg: "bg-pink-100", border: "border-pink-200" },
+  { icon: "🧁", title: "Cupcakes", href: "/services#cupcakes", desc: "Individual flavors and designs, perfect for any event.", bg: "bg-amber-100", border: "border-amber-200" },
+  { icon: "🍪", title: "Custom Cookie Assortment", href: "/services#cookie-assortment", desc: "Thoughtfully curated custom cookie assortments for any occasion.", bg: "bg-yellow-100", border: "border-yellow-200" },
+  { icon: "✨", title: "Your Vision, Made Real", href: "/services#custom-vision", desc: "Got a wild idea? Describe your dream and we'll bring it to life.", bg: "bg-purple-100", border: "border-purple-200" },
 ];
 
 const staticReviews = [
@@ -63,10 +53,10 @@ const accentCycle = ["bg-rose-400", "bg-amber-400", "bg-pink-400", "bg-purple-40
 
 function buildBakeryJsonLd(googleReviews: Awaited<ReturnType<typeof getGoogleReviews>>) {
   const placeId = process.env.GOOGLE_PLACE_ID;
-  const sameAsList =
-    placeId && placeId.length > 0
-      ? [`https://www.google.com/maps/place/?q=place_id:${placeId}`]
-      : null;
+  const sameAsList = [
+    ...SOCIAL_LINKS.map((s) => s.url),
+    ...(placeId ? [`https://www.google.com/maps/place/?q=place_id:${placeId}`] : []),
+  ];
 
   const businessPhone = process.env.BUSINESS_PHONE;
   const showAggregate =
@@ -75,21 +65,26 @@ function buildBakeryJsonLd(googleReviews: Awaited<ReturnType<typeof getGoogleRev
   return {
     "@context": "https://schema.org",
     "@type": "Bakery",
-    name: "Mackenzie Rose Bakes",
+    "@id": `${SITE_URL}/#bakery`,
+    name: SITE_NAME,
     description:
       "Custom cakes, cupcakes, and baked goods handcrafted in New York City.",
     image: `${SITE_URL}/opengraph-image`,
+    logo: `${SITE_URL}/mackenzielogobackground.jpg`,
     address: {
       "@type": "PostalAddress",
       addressLocality: "New York",
+      postalCode: "10022",
       addressRegion: "NY",
       addressCountry: "US",
     },
     url: SITE_URL,
     servesCuisine: "Bakery",
     priceRange: "$$",
-    areaServed: { "@type": "City", name: "New York City" },
-    openingHours: "By appointment. Contact for custom order lead times, pickup, and delivery.",
+    areaServed: DELIVERY_BOROUGHS.map((name) => ({
+      "@type": "AdministrativeArea",
+      name: `${name}, New York City`,
+    })),
     ...(businessPhone ? { telephone: businessPhone } : {}),
     ...(showAggregate
       ? {
@@ -102,7 +97,15 @@ function buildBakeryJsonLd(googleReviews: Awaited<ReturnType<typeof getGoogleRev
           },
         }
       : {}),
-    ...(sameAsList ? { sameAs: sameAsList } : {}),
+    sameAs: sameAsList,
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "Custom cakes and baked goods",
+      itemListElement: services.map((service) => ({
+        "@type": "Offer",
+        itemOffered: { "@type": "Service", name: service.title, description: service.desc },
+      })),
+    },
   };
 }
 
@@ -137,16 +140,17 @@ export default async function HomePage() {
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6 shadow-sm border border-rose-200">
                 <span className="text-sm">🎂</span>
-                <span className="text-rose-600 text-sm font-medium">New York City&apos;s Custom Home Baker</span>
+                <span className="text-rose-600 text-sm font-medium">Midtown East &amp; Upper East Side · Delivering across NYC</span>
               </div>
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-rose-950 leading-tight mb-6"
                 style={{ fontFamily: "var(--font-playfair)" }}>
-                Baked with Love,{" "}
-                <span className="text-rose-500 italic">Made for You</span>
+                NYC Custom Cakes,{" "}
+                <span className="text-rose-500 italic">Baked with Love</span>
               </h1>
               <p className="text-lg text-rose-900/70 leading-relaxed mb-8 max-w-xl">
-                Custom cakes, cupcakes & treats handcrafted in New York City.
-                Every creation is designed to make your moment unforgettable.
+                Custom birthday cakes, wedding cakes, cupcakes &amp; treats made
+                from scratch on Manhattan&apos;s East Side — and delivered
+                anywhere in New York City.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link href="/portfolio"
@@ -160,7 +164,7 @@ export default async function HomePage() {
               </div>
               <div className="mt-10 flex flex-wrap gap-6 text-sm text-rose-900/60">
                 <span className="flex items-center gap-1.5"><span className="text-amber-500">★★★★★</span> 5-star rated</span>
-                <span className="flex items-center gap-1.5">🗽 NYC-based</span>
+                <span className="flex items-center gap-1.5">🚚 Delivery in all 5 boroughs</span>
                 <span className="flex items-center gap-1.5">🎨 100% custom</span>
               </div>
             </div>
@@ -212,14 +216,20 @@ export default async function HomePage() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {services.map((service) => (
-              <div key={service.title}
+              <Link key={service.title} href={service.href}
                 className={`${service.bg} border ${service.border} rounded-2xl p-5 text-center shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1`}>
                 <div className="text-3xl mb-2">{service.icon}</div>
                 <h3 className="text-sm font-bold text-rose-900 mb-1.5" style={{ fontFamily: "var(--font-playfair)" }}>{service.title}</h3>
                 <p className="text-rose-900/60 text-xs leading-relaxed">{service.desc}</p>
-              </div>
+              </Link>
             ))}
           </div>
+          <p className="text-center text-sm text-rose-900/70 mt-6">
+            🏢 Ordering for your office?{" "}
+            <Link href="/corporate-cakes" className="font-semibold text-rose-600 underline underline-offset-4 hover:text-rose-700">
+              Corporate &amp; employee birthday cakes →
+            </Link>
+          </p>
           <div className="text-center mt-8">
             <Link href="/services"
               className="inline-flex items-center gap-2 px-6 py-3 bg-amber-400 hover:bg-amber-500 text-amber-950 font-semibold rounded-full transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5 text-sm">
@@ -381,7 +391,7 @@ export default async function HomePage() {
             className="inline-block px-10 py-4 bg-rose-500 hover:bg-rose-600 text-white font-bold text-base rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200">
             Request a Custom Order
           </Link>
-          <p className="text-stone-400 text-xs mt-4">NYC &amp; surrounding areas · Made fresh to order</p>
+          <p className="text-stone-400 text-xs mt-4">Midtown East &amp; Upper East Side · Delivering to all five boroughs · Made fresh to order</p>
         </div>
       </section>
     </>
