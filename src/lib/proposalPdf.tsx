@@ -395,7 +395,7 @@ function ProposalPdfDocument(
 
         <View style={styles.footer} fixed>
           <Text>
-            Mackenzie Rose Bakes · www.mackenzierosebakes.com · NYC & surrounding areas
+            Mackenzie Rose Bakes · mackenzierosebakes.com · NYC & surrounding areas
           </Text>
         </View>
       </Page>

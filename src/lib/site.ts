@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 /** Public production site URL (canonical, sitemap, JSON-LD). */
-export const SITE_URL = "https://www.mackenzierosebakes.com" as const;
+export const SITE_URL = "https://mackenzierosebakes.com" as const;
 
 export const SITE_NAME = "Mackenzie Rose Bakes" as const;
 
